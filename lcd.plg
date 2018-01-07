@@ -1,0 +1,46 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+D:\2.8inch_Lcd_tester\lcd.uvproj
+Project File Date:  01/07/2018
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling debug_lcd.c...
+DEBUG_LCD.C(133): error C202: 'S2TI': undefined identifier
+DEBUG_LCD.C(134): error C202: 'S2TI': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling debug_lcd.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?UART2_INIT?DEBUG_LCD
+Program Size: data=9.1 xdata=244 code=3452
+creating hex file from "lcd"...
+"lcd" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling debug_lcd.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?UART2_INIT?DEBUG_LCD
+Program Size: data=9.1 xdata=244 code=3452
+creating hex file from "lcd"...
+"lcd" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling debug_lcd.c...
+linking...
+Program Size: data=9.1 xdata=244 code=3455
+creating hex file from "lcd"...
+"lcd" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling debug_lcd.c...
+DEBUG_LCD.C(9): error C129: missing ';' before 'com2_data'
+Target not created
+Build target 'Target 1'
+compiling debug_lcd.c...
+linking...
+Program Size: data=9.1 xdata=250 code=3513
+creating hex file from "lcd"...
+"lcd" - 0 Error(s), 0 Warning(s).

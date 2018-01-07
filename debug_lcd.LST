@@ -1,0 +1,505 @@
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE DEBUG_LCD
+OBJECT MODULE PLACED IN debug_lcd.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE debug_lcd.c LARGE BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          //#include"STC12C2052.h" 
+   2          #include"STC12C5A.h"
+   3          #include<intrins.h>  
+   4          #include "1602.h"
+   5          #define uchar unsigned char  
+   6          #define uint  unsigned int 
+   7          #define S2RI 0X01
+   8          #define S2TI 0X02
+   9          
+  10          uchar com2_data[5]={0};
+  11          uchar b=0;
+  12          uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
+  13          uchar reboot_cnt=0;
+  14          unsigned short real_data[50]={0};
+  15          
+  16          void reboot(uchar buf)
+  17          {
+  18   1        if(buf==0x7f)//程序下载请求
+  19   1        {
+  20   2           reboot_cnt++;
+  21   2               if(reboot_cnt==30)
+  22   2               {
+  23   3                      reboot_cnt=0;
+  24   3                  IAP_CONTR=0X60;//自动重启系统
+  25   3               }
+  26   2         }
+  27   1      }
+  28          unsigned short get_crc1(uchar *ptr,uchar len)
+  29          {
+  30   1        uchar i;
+  31   1        unsigned short crc=0xFFFF;
+  32   1        if(len==0) len=1;
+  33   1        while(len--)
+  34   1        {
+  35   2          crc ^=*ptr;
+  36   2          for(i=0;i<8;i++)
+  37   2          {
+  38   3            if(crc&1)
+  39   3            {
+  40   4              crc>>=1;
+  41   4              crc ^= 0XA001; 
+  42   4            }
+  43   3            else crc>>=1;
+  44   3          }
+  45   2          ptr++;
+  46   2        }
+  47   1        return(crc);
+  48   1      }
+  49          
+  50          unsigned short get_crc(uchar *ptr,uchar len)
+  51          {
+  52   1        uchar i;
+  53   1        unsigned short crc=0xFFFF;
+  54   1        if(len==0) len=1;
+  55   1        while(len--)
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 2   
+
+  56   1        {
+  57   2          crc ^=*ptr;
+  58   2          for(i=0;i<8;i++)
+  59   2          {
+  60   3            if(crc&1)
+  61   3            {
+  62   4              crc>>=1;
+  63   4              crc ^= 0XA001; 
+  64   4            }
+  65   3            else crc>>=1;
+  66   3          }
+  67   2          ptr++;
+  68   2        }
+  69   1        return(crc);
+  70   1      }  
+  71          
+  72          
+  73          void UartInit(void)//使用定时器1模式
+  74          {
+  75   1                      SCON = 0x50;//串口工作方式1,允许接收（SCON = 0x40时禁止接收）
+  76   1                      //PCON = 0x80;//波特率(倍频)
+  77   1                      TMOD = 0x20;//定时器1工作方式2
+  78   1                      AUXR |= 0X40;//定时器1工作在1T模式，为全速,(掉为12T模式)
+  79   1                  TH1 = 0xFD; //115200        
+  80   1                      //TH1 = 0xf7;   //定时器初值高8位设置38400
+  81   1                      TL1 = TH1;      //定时器初值低8位设置
+  82   1                      EA = 1; //允许总中断 
+  83   1                      ES = 1; //允许UART串口的中断
+  84   1                      TR1 = 1;        //定时器启动    
+  85   1      }      
+  86          
+  87          void UART2_init()//串口2初始化
+  88          {
+  89   1        //AUXR1=0X10;//TXD2由P1.3转到P4.3口,RXD2由P1.2转到P4.2口
+  90   1        S2CON=0X50;//选择工作方式1，允许接收数据
+  91   1        BRT = 0xf7;//独立发生器的重装值
+  92   1        EA = 1; //允许总中断  
+  93   1        AUXR |= 0x14;//(1T模式),启动发生器工作,0X1c波特率加倍，如0x14为不加倍
+  94   1        //AUXR |= 0X18;//(12T模式),启动发生器工作,波特率加倍，如0x10为不加倍
+  95   1        IE2=0x01;//允许串口2中断 
+  96   1      }
+  97          
+  98          void send_data(uchar device_n,uchar reg_n,uchar reg_mun)
+  99          {
+ 100   1                unsigned short crc;
+ 101   1                uchar i=0;
+ 102   1            uchar read_buf[11]={0xaa,0x55,0xcc};
+ 103   1                read_buf[3]=device_n;
+ 104   1                read_buf[4]=0x03;
+ 105   1                read_buf[5]=0x00;
+ 106   1                read_buf[6]=reg_n;
+ 107   1                read_buf[7]=0x00;
+ 108   1                read_buf[8]=reg_mun;
+ 109   1                crc=get_crc1(&read_buf[3],6);
+ 110   1                read_buf[9]=crc&0xff;
+ 111   1                read_buf[10]=(crc>>8)&0xff;
+ 112   1                for(i=0;i<11;i++)
+ 113   1                {
+ 114   2                   SBUF = read_buf[i];
+ 115   2                       while(TI == 0);
+ 116   2                       TI=0;
+ 117   2                }
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 3   
+
+ 118   1              
+ 119   1      }      
+ 120          
+ 121           void send_data_com2(uchar device_n,uchar reg_n,uchar reg_mun)
+ 122          {
+ 123   1                unsigned short crc;
+ 124   1                uchar i=0;
+ 125   1            uchar read_buf[11]={0xaa,0x55,0xcc};
+ 126   1                read_buf[3]=device_n;
+ 127   1                read_buf[4]=0x03;
+ 128   1                read_buf[5]=0x00;
+ 129   1                read_buf[6]=reg_n;
+ 130   1                read_buf[7]=0x00;
+ 131   1                read_buf[8]=reg_mun;
+ 132   1                crc=get_crc1(&read_buf[3],6);
+ 133   1                read_buf[9]=crc&0xff;
+ 134   1                read_buf[10]=(crc>>8)&0xff;
+ 135   1                for(i=0;i<11;i++)
+ 136   1                {
+ 137   2                   S2BUF = read_buf[i];
+ 138   2               while((S2CON&S2TI)==0);//等待数据发送完成，硬置位S2TI           
+ 139   2                   S2CON&=~S2TI;      //清除置位，以便发送下一数据
+ 140   2                }
+ 141   1              
+ 142   1      }
+ 143          
+ 144          //指针形式
+ 145          void lcd_display(unsigned short *real_data)
+ 146          {
+ 147   1         uchar disbuf[17]={0};
+ 148   1         disbuf[0]='v';
+ 149   1         disbuf[1]=(*(real_data)>>8)+48;
+ 150   1         disbuf[2]='.';
+ 151   1         disbuf[3]=(*(real_data)&0x00ff)+48;
+ 152   1         disbuf[4]='.';
+ 153   1         disbuf[5]=(*(real_data+1)>>8)+48;
+ 154   1         disbuf[6]=' ';
+ 155   1         disbuf[7]=' ';
+ 156   1         disbuf[8]=((*(real_data+1)&0x00ff)>>4)+48;
+ 157   1         disbuf[9]=(*(real_data+1)&0x000f)+48;
+ 158   1         disbuf[10]='-';
+ 159   1         disbuf[11]=(*(real_data+2)>>12)+48;
+ 160   1         disbuf[12]=((*(real_data+2)>>8)&0x000f)+48;
+ 161   1         disbuf[13]= '-';
+ 162   1         disbuf[14]=((*(real_data+2)>>4)&0x000f)+48;
+ 163   1         disbuf[15]=(*(real_data+2)&0x000f)+48;
+ 164   1         disbuf[16]= '\0';
+ 165   1         xiezfc(2,1,disbuf);
+ 166   1      } 
+ 167          
+ 168          /*数组形式
+ 169          void lcd_display(unsigned short *real_data)
+ 170          {
+ 171             uchar disbuf[17]={0};
+ 172             disbuf[0]='v';
+ 173             disbuf[1]=(real_data[0]>>8)+48;
+ 174             disbuf[2]='.';
+ 175             disbuf[3]=(real_data[0]&0x00ff)+48;
+ 176             disbuf[4]='.';
+ 177             disbuf[5]=(real_data[1]>>8)+48;
+ 178             disbuf[6]=' ';
+ 179             disbuf[7]=' ';
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 4   
+
+ 180             disbuf[8]=((real_data[1]&0x00ff)>>4)+48;
+ 181             disbuf[9]=(real_data[1]&0x000f)+48;
+ 182             disbuf[10]='-';
+ 183             disbuf[11]=(real_data[2]>>12)+48;
+ 184             disbuf[12]=((real_data[2]>>8)&0x000f)+48;
+ 185             disbuf[13]= '-';
+ 186             disbuf[14]=((real_data[2]>>4)&0x000f)+48;
+ 187             disbuf[15]=(real_data[2]&0x000f)+48;
+ 188             disbuf[16]= '\0';
+ 189             xiezfc(2,1,disbuf);
+ 190          } */ 
+ 191          
+ 192          void clear_real_data()
+ 193          {
+ 194   1        uchar i;
+ 195   1        for(i=0;i<50;i++)
+ 196   1        {
+ 197   2          real_data[i]=0x0000;
+ 198   2        }
+ 199   1      
+ 200   1      }  
+ 201          
+ 202          
+ 203          
+ 204          void Main(void)  
+ 205          {  
+ 206   1        uchar device=0;
+ 207   1        unsigned short disply_data[3]={0};
+ 208   1        LE=0;
+ 209   1        UartInit();
+ 210   1        UART2_init();  
+ 211   1        init_1602();    
+ 212   1        xiezfc(1,1,"<version-tester>");
+ 213   1        xiezfc(2,1,"    ---jack_chen");
+ 214   1        delay(1000);
+ 215   1        while(1)  
+ 216   1        {  
+ 217   2          send_data_com2(0x05,0x78,3);
+ 218   2      
+ 219   2              //*电源管理板
+ 220   2          send_data(0x05,0x78,3);
+ 221   2          delay(30);
+ 222   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)
+ 223   2              {
+ 224   3                device=1;
+ 225   3                disply_data[0]=real_data[0];
+ 226   3                disply_data[1]=real_data[1];
+ 227   3                disply_data[2]=real_data[2];
+ 228   3              }
+ 229   2              clear_real_data();
+ 230   2      
+ 231   2          //舵机板
+ 232   2          send_data(0x01,0x78,3);
+ 233   2          delay(30);
+ 234   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)
+ 235   2              {
+ 236   3                device=2;
+ 237   3                disply_data[0]=real_data[0];
+ 238   3                disply_data[1]=real_data[1];
+ 239   3                disply_data[2]=real_data[2];
+ 240   3              }
+ 241   2              clear_real_data();
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 5   
+
+ 242   2      
+ 243   2          //左手
+ 244   2          send_data(0x06,0x78,3);
+ 245   2          delay(30);
+ 246   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)
+ 247   2              {
+ 248   3                device=3;
+ 249   3                disply_data[0]=real_data[0];
+ 250   3                disply_data[1]=real_data[1];
+ 251   3                disply_data[2]=real_data[2];
+ 252   3              }
+ 253   2              clear_real_data();
+ 254   2      
+ 255   2          //右手
+ 256   2          send_data(0x07,0x78,3);
+ 257   2          delay(30);
+ 258   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)       
+ 259   2              {
+ 260   3                device=4;
+ 261   3                disply_data[0]=real_data[0];
+ 262   3                disply_data[1]=real_data[1];
+ 263   3                disply_data[2]=real_data[2];
+ 264   3              }
+ 265   2              clear_real_data();
+ 266   2      
+ 267   2          //呼吸灯板
+ 268   2          send_data(0x03,0x78,3);
+ 269   2          delay(30);
+ 270   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)       
+ 271   2              {
+ 272   3                device=5;
+ 273   3                disply_data[0]=real_data[0];
+ 274   3                disply_data[1]=real_data[1];
+ 275   3                disply_data[2]=real_data[2];
+ 276   3              }
+ 277   2              clear_real_data();
+ 278   2      
+ 279   2          //手呼吸灯板
+ 280   2          send_data(0x04,0x78,3);
+ 281   2          delay(30);
+ 282   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)       
+ 283   2              {
+ 284   3                device=6;
+ 285   3                disply_data[0]=real_data[0];
+ 286   3                disply_data[1]=real_data[1];
+ 287   3                disply_data[2]=real_data[2];
+ 288   3              }
+ 289   2              clear_real_data();      
+ 290   2      
+ 291   2          //右轮
+ 292   2          send_data(0x02,0x78,3);
+ 293   2          delay(30);
+ 294   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)       
+ 295   2              {
+ 296   3                device=7;
+ 297   3                disply_data[0]=real_data[0];
+ 298   3                disply_data[1]=real_data[1];
+ 299   3                disply_data[2]=real_data[2];
+ 300   3              }
+ 301   2              clear_real_data();
+ 302   2      
+ 303   2          //主控板
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 6   
+
+ 304   2              //TH1 = 0xFA;   //波特率切换为115200    
+ 305   2              //TL1 = TH1;    
+ 306   2          send_data(0x81,0x78,3);
+ 307   2          delay(30);
+ 308   2          if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)       
+ 309   2              {
+ 310   3                device=8;
+ 311   3                disply_data[0]=real_data[0];
+ 312   3                disply_data[1]=real_data[1];
+ 313   3                disply_data[2]=real_data[2];
+ 314   3              }
+ 315   2              //TH1 = 0xee;   //波特率切换回38400
+ 316   2              //TL1 = TH1;
+ 317   2              clear_real_data();
+ 318   2              
+ 319   2              if(device!=0)
+ 320   2              {
+ 321   3                if(device==1)
+ 322   3                {
+ 323   4                  xiezfc(1,1,"Power board     ");
+ 324   4                      lcd_display(disply_data);               
+ 325   4      
+ 326   4                }
+ 327   3                if(device==2)
+ 328   3                {
+ 329   4                  xiezfc(1,1,"Turn board   [1]");
+ 330   4                      lcd_display(disply_data);
+ 331   4                }
+ 332   3                if(device==3)
+ 333   3                {
+ 334   4                  xiezfc(1,1,"Left hand    [6]");
+ 335   4                      lcd_display(disply_data);
+ 336   4                }
+ 337   3                if(device==4)
+ 338   3                {
+ 339   4                  xiezfc(1,1,"Right hand   [7]");
+ 340   4                      lcd_display(disply_data);
+ 341   4                }
+ 342   3                if(device==5)
+ 343   3                {
+ 344   4                  xiezfc(1,1,"Head-LED     [3]");
+ 345   4                      lcd_display(disply_data);
+ 346   4                }
+ 347   3                if(device==6)
+ 348   3                {
+ 349   4                  xiezfc(1,1,"Hand-LED     [4]");
+ 350   4                      lcd_display(disply_data);
+ 351   4                }
+ 352   3                if(device==7)
+ 353   3                {
+ 354   4                  xiezfc(1,1,"Turn board   [2]");
+ 355   4                      lcd_display(disply_data);
+ 356   4                }
+ 357   3                if(device==8)
+ 358   3                {
+ 359   4                  xiezfc(1,1,"Main board      ");
+ 360   4                      lcd_display(disply_data);
+ 361   4                }
+ 362   3      
+ 363   3                device=0;     
+ 364   3                disply_data[0]=0;
+ 365   3                disply_data[1]=0;
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 7   
+
+ 366   3                disply_data[2]=0;
+ 367   3              }
+ 368   2          else
+ 369   2          {
+ 370   3                 xiezfc(1,1,"Testing....     ");
+ 371   3                 xiezfc(2,1,com2_data);
+ 372   3          }              
+ 373   2      
+ 374   2          delay(300);//*/
+ 375   2        }
+ 376   1      }
+ 377                  
+ 378          void get_data(void)     interrupt 4  
+ 379          {
+ 380   1        uchar i,j;
+ 381   1        unsigned short crc_result,ck_crc;  
+ 382   1                  
+ 383   1        if(RI == 1)   //当硬件接收到一个数据时，RI会置位      
+ 384   1        {
+ 385   2          RI = 0; 
+ 386   2          data_buf[data_len]=SBUF;
+ 387   2              reboot(data_buf[data_len]);
+ 388   2          if(start_recive==0)
+ 389   2          {
+ 390   3            if(data_len==0&&data_buf[data_len]==0xaa)
+ 391   3            {  
+ 392   4              data_len=1; 
+ 393   4            }      
+ 394   3                else if(data_len==1&&data_buf[data_len]==0xaa)//如下次传来的还是帧头再次以aa开始判断帧
+ 395   3            {  
+ 396   4             data_len=1;  
+ 397   4            } 
+ 398   3            else if(data_len==1&&data_buf[data_len]==0x55)
+ 399   3            {
+ 400   4              data_len=2;  
+ 401   4            }    
+ 402   3            else if(data_len==2&&data_buf[data_len]==0xcc)
+ 403   3            {  
+ 404   4             start_recive=1;
+ 405   4            } 
+ 406   3            else 
+ 407   3            {
+ 408   4             data_len=0;
+ 409   4            }
+ 410   3          }    
+ 411   2          if(start_recive==1)
+ 412   2          {
+ 413   3            if(start_fram==1)//接收长度限制
+ 414   3            {
+ 415   4              if(frame_len>=70)
+ 416   4              {
+ 417   5                 start_recive=0;           
+ 418   5                 start_fram=0;
+ 419   5                         data_len=0;
+ 420   5                         frame_len=0;
+ 421   5                 return;
+ 422   5              }
+ 423   4              frame_len--;
+ 424   4              if(frame_len==0)
+ 425   4              {
+ 426   5                 crc_result = get_crc(&data_buf[3],data_buf[5]+3);//数据帧计算CRC
+ 427   5                 ck_crc = data_buf[ (data_buf[5]+7)]<<8 | data_buf[ (data_buf[5]+6) ];//低高字节CRC转换为整数
+C51 COMPILER V9.00   DEBUG_LCD                                                             01/08/2018 00:23:12 PAGE 8   
+
+ 428   5                     if(crc_result==ck_crc)//CRC校验比对
+ 429   5                     {  
+ 430   6                       for(i=0;i<(data_buf[5]/2);i++)//计算数据对个数
+ 431   6                       {
+ 432   7                         real_data[i]=data_buf[6+j]<<8| data_buf[7+j];//有效数据合为2个字节的数据（一个寄存器的数据值为
+             -2个字节） 
+ 433   7                         j=j+2;
+ 434   7                       }               
+ 435   6                 }            
+ 436   5                 start_recive=0;
+ 437   5                 start_fram=0;
+ 438   5                         data_len=0;
+ 439   5                         frame_len=0;
+ 440   5                         j=0; i=0;
+ 441   5                 return;
+ 442   5              }
+ 443   4            }        
+ 444   3            if(data_len==5)
+ 445   3            {
+ 446   4              start_fram=1;
+ 447   4              frame_len=data_buf[5]+2;
+ 448   4            }
+ 449   3            data_len++;
+ 450   3          }
+ 451   2        }
+ 452   1      }
+ 453          
+ 454          void UART2_jieshou(void) interrupt 8//接收字符及处理
+ 455          { 
+ 456   1       
+ 457   1              if(S2CON&S2RI)//有数据传来，硬件置位S2RI
+ 458   1              {
+ 459   2                 S2CON&=~S2RI;        //清除置位，以便下一数据传来             
+ 460   2                 com2_data[b] = S2BUF;
+ 461   2                 b++;
+ 462   2                 if(b==5)
+ 463   2                 { com2_data[4]='\0';
+ 464   3                   b=0; 
+ 465   3                 }     
+ 466   2          }
+ 467   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2477    ----
+   CONSTANT SIZE    =    232    ----
+   XDATA SIZE       =    211      71
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
