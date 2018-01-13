@@ -262,7 +262,7 @@ int Lcd_control(int fd, char *cmd)//模式设置
 {
   uchar receive_buf[4];
   char *cmdbuf=cmd;
-  uchar end_frame[]={0xff,0xff,0xff},len=1;
+  uchar end_frame[]={0xff,0xff,0xff} , len=0;
   while(*cmdbuf!='\0')
   {
     cmdbuf++;
@@ -283,51 +283,141 @@ int Lcd_control(int fd, char *cmd)//模式设置
     return FALSE;
   }
  
-    if(UART0_Recv(fd,receive_buf,3)<0)
+    if(UART0_Recv(fd,receive_buf,4)<0)
     {
        printf("接收超时！请检查模块是否连接正常。\n");
        return FALSE;
     }   
-    /*else
-    {
-      if(receive_buf[0]!=0x01&&receive_buf[1]!=0xff&&receive_buf[2]!=0xff)
-      { 
-        printf("LCD请求错误\n"); 
-        return FALSE;
-      }*/
     
+    if(receive_buf[0]==0x1a&&receive_buf[1]==0xff&&receive_buf[2]==0xff)
+    { 
+        printf("变量名称无效\n"); 
+        return FALSE;
+    }
+    if(receive_buf[0]==0x00&&receive_buf[1]==0xff&&receive_buf[2]==0xff)
+    { 
+        printf("无效指令\n"); 
+        return FALSE;
+    }
     return TRUE;   
 
 }
 
+/******************************************************************
+功能：将一个32位长整型变量dat转为字符串，比如把1234转为"1234"
+参数：dat:待转的long型的变量
+     str:指向字符数组的指针，转换后的字节串放在其中   
+返回：转换后的字符串长度                                
+******************************************************************/
+unsigned char int2str(int dat,unsigned char *str) // 长整型数转换为字符串，返回值为转换后的字符串长度
+{
+  signed char i=0;
+  unsigned char len = 0;
+  unsigned char buf[6]; // 长整数最大值4294967295，转ASCII码后占用10+1=11字节
+  if (dat < 0)// 如果为负数，首先取绝对值，并添加负号
+  {
+    dat = -dat;
+    *str++ = '-';
+    len++;
+  }
+  do
+  {// 低位在前高位在后顺序排列
+    buf[i++] = dat % 10+0x30;// C语言中数组下标固定从0开始
+    dat /= 10;
+  } while (dat > 0);
+  len += i;                 // i最后的值就是有效字符的个数
+  while (i-- > 0)           // 高位在前低位在后顺序排列
+  {
+    *str++ = buf[i] ;
+  }     
+  *str = 0;                 // 添加字符串结束符方便使用KEIL自带的字符串处理函数处理
+  return len;               // 返回字符串长度
+}
+
+
+
+int Lcd_set_val(int fd, char *cmd, int val)//模式设置
+{
+  uchar receive_buf[4];
+  uchar val_buf[5] , val_len;
+  char *cmd_buf = cmd;
+  uchar end_frame[]={0xff,0xff,0xff},cmd_len=0;
+
+  val_len = int2str(val,val_buf);//整型转字符型
+
+  while(*cmd_buf!='\0')
+  {
+    cmd_buf++;
+    cmd_len++;
+  }
+  printf("send data is:%s len:%d\n", cmd, cmd_len);
+  cmd_len = write(fd,cmd,cmd_len);//发送控制指令
+  if (cmd_len > 0 ) 
+  {
+     printf("send sucess! send_len:%d\n",cmd_len);
+     //return len;
+  }
+  else   
+  {               
+    tcflush(fd,TCOFLUSH);
+    return FALSE;
+  }
+
+  write(fd,val_buf,val_len);
+  printf("val_len:%s",val_buf);  
+
+  write(fd,end_frame,3);//帧尾部
  
+  if(UART0_Recv(fd,receive_buf,4)<0)
+  {
+       printf("接收超时！请检查模块是否连接正常。\n");
+       return FALSE;
+    }   
+    
+    if(receive_buf[0]==0x1a&&receive_buf[1]==0xff&&receive_buf[2]==0xff)
+    { 
+        printf("变量名称无效\n"); 
+        return FALSE;
+    }
+    if(receive_buf[0]==0x00&&receive_buf[1]==0xff&&receive_buf[2]==0xff)
+    { 
+        printf("无效指令\n"); 
+        return FALSE;
+    }
+    return TRUE;    
+
+}
+
  
 //*
 int main(int argc, char **argv)
 {
-    int fd=0; //文件描述符
-    fd = UART0_Open(fd,"/dev/ttyS1"); //打开串口，返回文件描述符
-    if(fd<0)
+    int fd1=0; //串口2
+    fd1 = UART0_Open(fd1,"/dev/ttyS1"); //打开串口，返回文件描述符
+    if(fd1<0)
     { 
       printf("open port fail!\n");
       exit(1);
     }
 
-    if(UART0_Init(fd,0,9600,'N',8,1)<0)
+    if(UART0_Init(fd1,0,9600,'N',8,1)<0)
     {
        printf("UART_Init fail!\n");
        exit(1); 
     }
 
+     
+     Lcd_control(fd1,"page ultrasonic");
+     //sleep(1);
      while (1) //循环读取数据
      {  
-       Lcd_control(fd,"page ultrasonic");
+       Lcd_set_val(fd1,"d0.val=",123);
+       //sleep(1); 
+       Lcd_set_val(fd1,"d2.val=",58965);
 
-       sleep(1);
-       Lcd_control(fd,"page main"); 
-       sleep(1);     
+       //sleep(1);     
       }
-     UART0_Close(fd);
+     UART0_Close(fd1);
 }//*/
 
 
