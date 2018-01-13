@@ -20,7 +20,7 @@
           port :串口号(ttyS0,ttyS1,ttyS2)
 * 出口参数：正确返回为1，错误返回为0
 *******************************************************************/
-int UART0_Open(int fd,const char* port)
+int UART_Open(int fd,const char* port)
 {
   fd = open( port, O_RDWR|O_NDELAY|O_NOCTTY);//
   if (fd < 0)
@@ -47,7 +47,7 @@ int UART0_Open(int fd,const char* port)
 * 入口参数：fd:文件描述符     
 * 出口参数：void
 *******************************************************************/
-void UART0_Close(int fd)
+void UART_Close(int fd)
 {
     close(fd);
 }
@@ -66,7 +66,7 @@ void UART0_Close(int fd)
           例子：UART0_Init(fd,0,115200,'N',8,1);
 *出口参数：正确返回为1，错误返回为0
 *******************************************************************/
-int UART0_Init(int fd,int flow_ctrl,int speed,int parity,int databits,int stopbits)
+int UART_Init(int fd,int flow_ctrl,int speed,int parity,int databits,int stopbits)
 {
   unsigned int   i;
   uchar speed_sta;
@@ -227,7 +227,7 @@ int UART0_Init(int fd,int flow_ctrl,int speed,int parity,int databits,int stopbi
 * 出口返回： >0:实际接收到的个数
            -1：接收超时(接收超时时间为Time_out这个宏定义)
 *******************************************************************/
-int UART0_Recv(int fd, uchar *rcv_buf,int data_len)
+int UART_Recv(int fd, uchar *rcv_buf,int data_len)
 {
     int len,fs_sele;
     struct timeval time;
@@ -245,7 +245,7 @@ int UART0_Recv(int fd, uchar *rcv_buf,int data_len)
        {
               len = read(fd,rcv_buf,data_len);
 	          //printf("len = %d fs_sele = %d\n",len,fs_sele);
-              tcflush( fd, TCIFLUSH );//只接收data_len个数据，没接收完的部分进行清空
+              tcflush( fd, TCIFLUSH );//只接收data_len个数据，没接收完的部分进行清空,不循环读取
               return len;
        }
        else
@@ -283,7 +283,7 @@ int Lcd_control(int fd, char *cmd)//模式设置
     return FALSE;
   }
  
-    if(UART0_Recv(fd,receive_buf,4)<0)
+    if(UART_Recv(fd,receive_buf,4)<0)
     {
        printf("接收超时！请检查模块是否连接正常。\n");
        return FALSE;
@@ -368,7 +368,8 @@ int Lcd_set_val(int fd, char *cmd, int val)//模式设置
 
   write(fd,end_frame,3);//帧尾部
  
-  if(UART0_Recv(fd,receive_buf,4)<0)
+  /*
+  if(UART_Recv(fd,receive_buf,4)<0)
   {
        printf("接收超时！请检查模块是否连接正常。\n");
        return FALSE;
@@ -383,41 +384,213 @@ int Lcd_set_val(int fd, char *cmd, int val)//模式设置
     { 
         printf("无效指令\n"); 
         return FALSE;
-    }
+    }//*/
     return TRUE;    
 
+}
+
+unsigned short get_crc(uchar *ptr,uchar len)
+{
+  uchar i;
+  unsigned short crc=0xFFFF;
+  if(len==0) len=1;
+  while(len--)
+  {
+    crc ^=*ptr;
+    for(i=0;i<8;i++)
+    {
+      if(crc&1)
+      {
+        crc>>=1;
+        crc ^= 0XA001; 
+      }
+      else crc>>=1;
+    }
+    ptr++;
+  }
+  return(crc);
+}
+
+
+/*
+扫描buf中的有效数据帧并将有效数据提取保存到buf1
+*p为接收区的地址
+*p1为存放区的地址
+len为接收区的总长度 
+返回值为寄存器的个数
+*/  
+
+int get_data(int fd,uchar *p,unsigned short *p1)
+{	
+    int len;
+    uchar save_len,i;
+    unsigned short crc_result,ck_crc;
+    
+    len = UART_Recv(fd,p,80);
+    if(len>=0)
+    {
+	  /*原始数据调试输出
+	  printf("raw_len = %d\n",len);
+	  printf("the raw_data is:\n");
+      for(i=0;i<len;i++)
+   	  {
+ 	    if(receive_buf[i]>>4==0)printf("0x0%X,",receive_buf[i]);//如果数据为单数自动补上0x0
+        else 
+	    if(i==len-1)printf("0x%x}\n",receive_buf[i]);//探测是否结束
+	    else    
+        printf("0x%X,",receive_buf[i]); //正常输出  	
+      }//*/
+      while(len--)
+      {
+	     if(*p==0xaa && *(p+1)==0x55 && *(p+2)==0xcc)//帧头检测
+	     { 
+		   crc_result = get_crc(p+3,*(p+5)+3);//数据帧计算CRC
+		   ck_crc = *(p+ *(p+5)+7)<<8|*(p+*(p+5)+6);//低高字节CRC转换为整数
+		   if(crc_result==ck_crc)//CRC校验比对
+		   {   
+	          //printf("crc_ok:%d\n",crc_result);
+	          //printf("daice:%d\n",ck_crc);
+		      save_len=*(p+5)/2;//计算数据对个数
+		      //printf("save_len:%d\n",*(p+5));
+		      //printf("save_len/2:%d\n",save_len);
+	          for(i=0;i<save_len;i++)
+	          {
+	              *p1=*(p+6)<<8|*(p+6+1);//有效数据合为2个字节的数据（一个寄存器的数据值为2个字节） 
+		          //printf("%X  ",*p1);
+	              p1++;
+	              p=p+2;
+	          }
+		      break;  
+		    }
+	      }
+          p++;
+	    }
+        return save_len;
+    }
+    else
+    return FALSE;
+}
+  
+
+
+ 
+
+
+/*
+将数据进行发送
+fd为为文件描述符
+rw读写操作(0为读操作，1为写操作)
+device_n为设备地址
+reg_n为寄存器起始地址
+reg_mun为要读/写的寄存器个数
+*/
+int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun)
+{
+	unsigned int crc,i,len;
+	uchar read_buf[12]={0xaa,0x55,0xcc};
+	//uchar write_buf[12]={0xaa,0x55,0xcc};
+	if(rw==0)
+	{
+	  read_buf[3]=device_n;
+	  read_buf[4]=0x03;
+	  read_buf[5]=0x00;
+	  read_buf[6]=reg_n;
+	  read_buf[7]=0x00;
+	  read_buf[8]=reg_mun;
+	  crc=get_crc(&read_buf[3],6);
+	  read_buf[9]=crc&0xff;
+	  read_buf[10]=(crc>>8)&0xff;
+	  printf("\n\nsend data is:");
+	  for(i=0;i<11;i++)
+
+	  printf("%x ",read_buf[i]);
+ 	  printf("  ");
+	 
+	  len = write(fd,read_buf,11);
+          if (len == 11 ) 
+ 	  {
+             printf("send sucess!\n\n");
+             return len;
+          }
+          else   
+          {               
+            tcflush(fd,TCOFLUSH);
+            return FALSE;
+          }
+	}
+   return TRUE;
 }
 
  
 //*
 int main(int argc, char **argv)
 {
-    int fd1=0; //串口2
-    fd1 = UART0_Open(fd1,"/dev/ttyS1"); //打开串口，返回文件描述符
+
+    int fd1=0; //串口1    
+    int fd2=0; //串口2
+    int len;
+    //reg_nam为寄存器的具体名称 
+    enum reg_enum {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2};
+    //reg_data为寄存器名称对应的实际地址 
+    uchar reg[]={0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A};
+    //reg_buf寄存器地址所存放的数据(一个寄存器地址的数据为2字节) ,请求响应寄存器后接收解析的数据将会保存到这里 
+    unsigned short reg_data[30];
+    //receive_buf为接收区的数据，接收到的原始数据将会存放到这里，然后进行解析。
+    uchar receive_buf[255];
+
+    fd1 = UART_Open(fd1,"/dev/ttyS1"); //打开串口1，返回文件描述符
     if(fd1<0)
     { 
-      printf("open port fail!\n");
+      printf("open port1 fail!\n");
       exit(1);
     }
 
-    if(UART0_Init(fd1,0,9600,'N',8,1)<0)
+    if(UART_Init(fd1,0,115200,'N',8,1)<0)
     {
-       printf("UART_Init fail!\n");
+       printf("UART_Init1 fail!\n");
+       exit(1); 
+    }
+
+    fd2 = UART_Open(fd2,"/dev/ttyS2"); //打开串口2，返回文件描述符
+    if(fd2<0)
+    { 
+      printf("open port2 fail!\n");
+      exit(1);
+    }
+
+    if(UART_Init(fd2,0,9600,'N',8,1)<0)
+    {
+       printf("UART_Init2 fail!\n");
        exit(1); 
     }
 
      
-     Lcd_control(fd1,"page ultrasonic");
+     Lcd_control(fd2,"page ultrasonic");
      //sleep(1);
      while (1) //循环读取数据
-     {  
-       Lcd_set_val(fd1,"d0.val=",123);
-       //sleep(1); 
-       Lcd_set_val(fd1,"d2.val=",58965);
-
-       //sleep(1);     
-      }
-     UART0_Close(fd1);
+     { 
+         send_data(fd1,0,0x81,0x80,27); //主控板数据请求                      
+         len = get_data(fd1,receive_buf,reg_data);//主控板数据解帧		
+         if(len > 0)
+         { 
+           Lcd_set_val(fd2,"d0.val=",(reg_data[chaosheng1]>>8)*10);
+           Lcd_set_val(fd2,"d2.val=",(reg_data[chaosheng1]&0x00ff)*10);
+           Lcd_set_val(fd2,"d4.val=",(reg_data[chaosheng2]>>8)*10);
+           Lcd_set_val(fd2,"d6.val=",(reg_data[chaosheng2]&0x00ff)*10);
+           Lcd_set_val(fd2,"d8.val=",(reg_data[chaosheng3]>>8)*10);
+           Lcd_set_val(fd2,"da.val=",(reg_data[chaosheng3]&0x00ff)*10);
+           Lcd_set_val(fd2,"dc.val=",(reg_data[chaosheng4]>>8)*10);
+           Lcd_set_val(fd2,"de.val=",(reg_data[chaosheng4]&0x00ff)*10);
+           Lcd_set_val(fd2,"e0.val=",(reg_data[chaosheng5]>>8)*10);
+           Lcd_set_val(fd2,"e2.val=",(reg_data[chaosheng5]&0x00ff)*10);
+           Lcd_set_val(fd2,"e4.val=",(reg_data[chaosheng6]>>8)*10);
+           Lcd_set_val(fd2,"e8.val=",(reg_data[chaosheng6]&0x00ff)*10);
+           Lcd_set_val(fd2,"hongwaizuo.val=",(reg_data[hongwai2]>>8)*2);
+           Lcd_set_val(fd2,"hongwaiyou.val=",(reg_data[hongwai2]&0x00ff)*2);
+           sleep(1);     
+         }
+     }
+   UART_Close(fd1);
 }//*/
 
 
