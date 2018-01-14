@@ -6,12 +6,12 @@
 #include<fcntl.h>      /*文件控制定义open(),fcntl()*/
 #include<termios.h>    /*PPSIX 终端控制定义*/
 //#include<errno.h>      /*错误号定义*/
-//#include<string.h>
+#include<string.h>
 #define uchar unsigned char 
 #define FALSE  -1
 #define TRUE   0
-#define Time_out 1 //串口超时时间设置
-
+#define Time_out 10000 //串口超时时间设置
+enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
 
 /*******************************************************************
 * 名称：UART0_Open
@@ -521,8 +521,57 @@ int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun)
    return TRUE;
 }
 
+int char_compare(uchar *ch1,char *ch2)//字符串对比，相同返回0,不同返回-1
+{
+  uchar count1,count2;
+  uchar *cha = ch1;
+  char *chb = ch2;
+  while(*cha!='\0')
+  {
+    cha++;
+    count1++;
+  }
+  while(*chb!='\0')
+  {
+    chb++;
+    count2++;
+  }
+  if(count1 != count2)
+  return FALSE;
+
+  while(*ch2!='\0')
+  {
+    if(*ch1==*ch2)
+    {
+      ch1++;
+      ch2++;
+    }
+    else
+    return FALSE;
+  }
+  return TRUE;
+}
  
-//*
+int Lcd_touch_read(int fd)
+{
+  uchar touch_buf[20],buf_len;
+  buf_len = UART_Recv(fd,touch_buf,13);
+  if(buf_len>0)
+  {
+    printf("touch_raw_data is:%s\n",touch_buf);
+    printf("compare is:%d\n",char_compare(touch_buf,"return_button")); 
+    memset(touch_buf,0,20);   
+    /*if(char_compare(touch_buf,"sensor_button")==TRUE)return Sensor_button;
+    if(char_compare(touch_buf,"control_button")==TRUE)return Control_button;
+    if(char_compare(touch_buf,"headctr_button")==TRUE)return Headctr_button;
+    if(char_compare(touch_buf,"hardwar_button")==TRUE)return Hardwar_button;
+    if(char_compare(touch_buf,"return_button")==TRUE)return Return_button;*/
+      
+  }
+  //printf("chumo chaoshi\n");
+  return FALSE; 
+}
+
 int main(int argc, char **argv)
 {
 
@@ -563,13 +612,13 @@ int main(int argc, char **argv)
        printf("UART_Init2 fail!\n");
        exit(1); 
     }
-
-     
+//enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
+    
      Lcd_control(fd2,"page ultrasonic");
      //sleep(1);
      while (1) //循环读取数据
      { 
-         send_data(fd1,0,0x81,0x80,27); //主控板数据请求                      
+        /* send_data(fd1,0,0x81,0x80,6); //主控板数据请求                      
          len = get_data(fd1,receive_buf,reg_data);//主控板数据解帧		
          if(len > 0)
          { 
@@ -588,7 +637,8 @@ int main(int argc, char **argv)
            Lcd_set_val(fd2,"hongwaizuo.val=",(reg_data[hongwai2]>>8)*2);
            Lcd_set_val(fd2,"hongwaiyou.val=",(reg_data[hongwai2]&0x00ff)*2);
            sleep(1);     
-         }
+         }*/
+         printf("the touch is:%d",Lcd_touch_read(fd2));
      }
    UART_Close(fd1);
 }//*/
