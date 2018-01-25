@@ -15,8 +15,7 @@
 uchar reg[]={0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A};
 
 //该为串口1(主控板)的接收全局变量
-uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
-uchar reboot_cnt=0;
+//uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
 //real_data寄存器地址所存放的数据(一个寄存器地址的数据为2字节) ,请求响应寄存器后接收解析的数据将会保存到这里 
 unsigned short real_data[50]={0};
 int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun);
@@ -46,10 +45,6 @@ unsigned short get_crc(uchar *ptr,uchar len)
   }
   return(crc);
 }
-
-
-
-  
 
 
 
@@ -98,62 +93,103 @@ int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun)
    return TRUE;
 }
 
-int char_compare(uchar *ch1,char *ch2)//字符串对比，相同返回0,不同返回-1
-{
-  uchar count1,count2;
-  uchar *cha = ch1;
-  char *chb = ch2;
-  while(*cha!='\0')
-  {
-    cha++;
-    count1++;
-  }
-  while(*chb!='\0')
-  {
-    chb++;
-    count2++;
-  }
-  if(count1 != count2)
-  return FALSE;
 
-  while(*ch2!='\0')
-  {
-    if(*ch1==*ch2)
-    {
-      ch1++;
-      ch2++;
+//*
+void *lcdjieshou(void* fd2)
+{
+ //该为串口2lcd的接收全局变量
+ uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
+ int len;
+ uchar rcv_buf;
+ uchar i,j;
+ unsigned short crc_result,ck_crc;
+ unsigned short real_data1[2]; 
+ while(1)
+ { 
+
+   len=UART_Recv(*((int *)fd2), &rcv_buf,1);
+   if(len>0)
+   {
+     data_buf[data_len]=rcv_buf;    
+     if(start_recive==0)
+     {
+       if(data_len==0&&data_buf[data_len]==0xaa)
+       {  
+         data_len=1;         
+       }      
+	   else if(data_len==1&&data_buf[data_len]==0xaa)//如下次传来的还是帧头再次以aa开始判断帧
+       {  
+        data_len=1;  
+       } 
+       else if(data_len==1&&data_buf[data_len]==0x55)
+       {
+         data_len=2;           
+       }    
+       else if(data_len==2&&data_buf[data_len]==0xcc)
+       {  
+        start_recive=1;        
+       }	
+       else 
+       {
+        data_len=0;
+       }
+     }    
+     if(start_recive==1)
+     {
+        
+       if(start_fram==1)//接收长度限制
+       {
+        if(frame_len>=70)
+        {
+           start_recive=0;           
+           start_fram=0;
+		   data_len=0;
+		   frame_len=0;
+           continue;
+        }
+        frame_len--;
+        if(frame_len==0)
+        {
+           crc_result = get_crc(&data_buf[3],data_buf[5]+3);//数据帧计算CRC
+           ck_crc = data_buf[ (data_buf[5]+7)]<<8 | data_buf[ (data_buf[5]+6) ];//低高字节CRC转换为整数
+	       if(crc_result==ck_crc)//CRC校验比对
+	       {  
+	         for(i=0;i<(data_buf[5]/2);i++)//计算数据对个数
+	         {
+	           real_data1[i]=data_buf[6+j]<<8| data_buf[7+j];//有效数据合为2个字节的数据（一个寄存器的数据值为2个字节） 
+	           j=j+2;
+	         }	         
+           }            
+           start_recive=0;
+           start_fram=0;
+		   data_len=0;
+		   frame_len=0;
+		   j=0; i=0;
+           printf("lcd_lcd\n");
+           if(real_data1[0]==0x0000)printf("page 1\n");
+           if(real_data1[0]==0x0001)printf("page 2\n");
+           if(real_data1[0]==0x0002)printf("page 3\n");
+           if(real_data1[0]==0x0003)printf("page 4\n");
+           continue;
+        }
+      }        
+      if(data_len==5)
+      {
+        start_fram=1;
+        frame_len=data_buf[5]+2;
+      }
+      data_len++;
     }
-    else
-    return FALSE;
-  }
-  return TRUE;
-}
- 
-
-
-
-int Lcd_touch_read(int fd)
-{
-  uchar touch_buf[20],buf_len;
-  buf_len = UART_Recv(fd,touch_buf,13);
-  if(buf_len>0)
-  {
-    printf("touch_raw_data is:%s\n",touch_buf);
-    printf("compare is:%d\n",char_compare(touch_buf,"return_button")); 
-    memset(touch_buf,0,20);   
-    /*if(char_compare(touch_buf,"sensor_button")==TRUE)return Sensor_button;
-    if(char_compare(touch_buf,"control_button")==TRUE)return Control_button;
-    if(char_compare(touch_buf,"headctr_button")==TRUE)return Headctr_button;
-    if(char_compare(touch_buf,"hardwar_button")==TRUE)return Hardwar_button;
-    if(char_compare(touch_buf,"return_button")==TRUE)return Return_button;*/
-      
-  }
-  //printf("chumo chaoshi\n");
-  return FALSE; 
+    len=0;
+   }
+ }//while end
+ return 0;   
 }
 
 void *zhukongjieshou(void *fd1)//串口接收的桢解析(线程1)
 {
+ //该为串口1(主控板)的接收全局变量
+ uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
  int len;
  uchar rcv_buf;
  uchar i,j;
@@ -242,7 +278,7 @@ int main(int argc, char **argv)
     int fd1=0; //串口1    
     int fd2=0; //串口2
     pthread_t com1_id;
-    //pthread_t com2_id;
+    pthread_t com2_id;
 
     //*
     fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
@@ -278,11 +314,12 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    /*if(pthread_create(&com2_id,NULL,lcdjieshou,NULL)>0)
+    //*
+    if(pthread_create(&com2_id,NULL,lcdjieshou,(void *)&fd2)>0)
     {
         printf("the pthread lcdjieshou faill!\n");
         exit(1);
-    }*/
+    }//*/
     //enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
     
      Lcd_control(fd2,"page ultrasonic");

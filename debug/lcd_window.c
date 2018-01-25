@@ -8,7 +8,7 @@ enum reg_enum {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,c
 
 int Lcd_control(int fd, char *cmd)//模式设置
 {
-  uchar receive_buf[4];//LCD返回数据buf
+  //uchar receive_buf[4];//LCD返回数据buf
   uchar *cmdbuf=(uchar *)cmd;
   uchar end_frame[]={0xff,0xff,0xff};//LCD发送帧尾部
   uchar len=0;
@@ -29,6 +29,7 @@ int Lcd_control(int fd, char *cmd)//模式设置
   
   UART_Send(fd,end_frame,3);//发送LCD帧尾
 
+  /*
   if(UART_Recv(fd,receive_buf,4)<0)
   {
      printf("接收超时！请检查模块是否连接正常。\n");
@@ -45,6 +46,7 @@ int Lcd_control(int fd, char *cmd)//模式设置
      printf("无效指令\n"); 
      return FALSE;
   }
+  //*/
   return TRUE;   
 
 }
@@ -80,11 +82,40 @@ unsigned char int2str(int dat,unsigned char *str) // 长整型数转换为字符
   return len;               // 返回字符串长度
 }
 
+/*int char_compare(uchar *ch1,char *ch2)//字符串对比，相同返回0,不同返回-1
+{
+  uchar count1,count2;
+  uchar *cha = ch1;
+  char *chb = ch2;
+  while(*cha!='\0')
+  {
+    cha++;
+    count1++;
+  }
+  while(*chb!='\0')
+  {
+    chb++;
+    count2++;
+  }
+  if(count1 != count2)
+  return FALSE;
 
+  while(*ch2!='\0')
+  {
+    if(*ch1==*ch2)
+    {
+      ch1++;
+      ch2++;
+    }
+    else
+    return FALSE;
+  }
+  return TRUE;
+}*/
 
 int Lcd_set_val(int fd, char *cmd, int val)//模式设置
 {
-  uchar receive_buf[4];
+  //uchar receive_buf[4];
   uchar val_buf[5];//int转char的缓存 
   uchar val_len;//转换后的数字有多少位数
   uchar *cmd_buf = (uchar *)cmd;
