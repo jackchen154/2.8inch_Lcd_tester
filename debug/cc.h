@@ -1,3 +1,3 @@
-rm test
-gcc -Wall test.c -o test -lpthread
+make clean
+make
 sudo ./test
