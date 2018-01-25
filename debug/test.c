@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include<stdio.h>      /*标准输入输出定义*/
 #include<stdlib.h>     /*标准函数库定义exit()*/
 #include<unistd.h>     /*Unix 标准函数定义read(),write()*/
@@ -10,7 +11,19 @@
 #define uchar unsigned char 
 #define FALSE  -1
 #define TRUE   0
-#define Time_out 10000 //串口超时时间设置
+#define Time_out 1 //串口超时时间设置
+    //reg_nam为寄存器的具体名称 
+    enum reg_enum {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2};
+    //reg_data为寄存器名称对应的实际地址 
+    uchar reg[]={0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A};
+
+//该为串口1(主控板)的接收全局变量
+uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
+uchar reboot_cnt=0;
+//real_data寄存器地址所存放的数据(一个寄存器地址的数据为2字节) ,请求响应寄存器后接收解析的数据将会保存到这里 
+unsigned short real_data[50]={0};
+int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun);
+
 enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
 
 /*******************************************************************
@@ -245,7 +258,7 @@ int UART_Recv(int fd, uchar *rcv_buf,int data_len)
        {
               len = read(fd,rcv_buf,data_len);
 	          //printf("len = %d fs_sele = %d\n",len,fs_sele);
-              tcflush( fd, TCIFLUSH );//只接收data_len个数据，没接收完的部分进行清空,不循环读取
+              //tcflush( fd, TCIFLUSH );//只接收data_len个数据，没接收完的部分进行清空,不循环读取
               return len;
        }
        else
@@ -552,6 +565,9 @@ int char_compare(uchar *ch1,char *ch2)//字符串对比，相同返回0,不同�
   return TRUE;
 }
  
+
+
+
 int Lcd_touch_read(int fd)
 {
   uchar touch_buf[20],buf_len;
@@ -572,22 +588,101 @@ int Lcd_touch_read(int fd)
   return FALSE; 
 }
 
+void *zhukongjieshou(void *fd1)//串口接收的桢解析(线程1)
+{
+ int len;
+ uchar rcv_buf;
+ uchar i,j;
+ unsigned short crc_result,ck_crc; 
+ while(1)
+ { 
+
+   len=UART_Recv(*((int *)fd1), &rcv_buf,1);
+   if(len>0)
+   {
+     data_buf[data_len]=rcv_buf;    
+     if(start_recive==0)
+     {
+       if(data_len==0&&data_buf[data_len]==0xaa)
+       {  
+         data_len=1;         
+       }      
+	   else if(data_len==1&&data_buf[data_len]==0xaa)//如下次传来的还是帧头再次以aa开始判断帧
+       {  
+        data_len=1;  
+       } 
+       else if(data_len==1&&data_buf[data_len]==0x55)
+       {
+         data_len=2;           
+       }    
+       else if(data_len==2&&data_buf[data_len]==0xcc)
+       {  
+        start_recive=1;        
+       }	
+       else 
+       {
+        data_len=0;
+       }
+     }    
+     if(start_recive==1)
+     {
+        
+       if(start_fram==1)//接收长度限制
+       {
+        if(frame_len>=70)
+        {
+           start_recive=0;           
+           start_fram=0;
+		   data_len=0;
+		   frame_len=0;
+           continue;
+        }
+        frame_len--;
+        if(frame_len==0)
+        {
+           crc_result = get_crc(&data_buf[3],data_buf[5]+3);//数据帧计算CRC
+           ck_crc = data_buf[ (data_buf[5]+7)]<<8 | data_buf[ (data_buf[5]+6) ];//低高字节CRC转换为整数
+	       if(crc_result==ck_crc)//CRC校验比对
+	       {  
+	         for(i=0;i<(data_buf[5]/2);i++)//计算数据对个数
+	         {
+	           real_data[i]=data_buf[6+j]<<8| data_buf[7+j];//有效数据合为2个字节的数据（一个寄存器的数据值为2个字节） 
+	           j=j+2;
+	         }	         
+           }            
+           start_recive=0;
+           start_fram=0;
+		   data_len=0;
+		   frame_len=0;
+		   j=0; i=0;
+           printf("lala\n");
+           continue;
+        }
+      }        
+      if(data_len==5)
+      {
+        start_fram=1;
+        frame_len=data_buf[5]+2;
+      }
+      data_len++;
+    }
+    len=0;
+   }
+ }//while end
+ return 0;  
+}
+
 int main(int argc, char **argv)
 {
 
     int fd1=0; //串口1    
     int fd2=0; //串口2
-    int len;
-    //reg_nam为寄存器的具体名称 
-    enum reg_enum {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2};
-    //reg_data为寄存器名称对应的实际地址 
-    uchar reg[]={0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A};
-    //reg_buf寄存器地址所存放的数据(一个寄存器地址的数据为2字节) ,请求响应寄存器后接收解析的数据将会保存到这里 
-    unsigned short reg_data[30];
-    //receive_buf为接收区的数据，接收到的原始数据将会存放到这里，然后进行解析。
-    uchar receive_buf[255];
+    pthread_t com1_id;
+    //pthread_t com2_id;
 
-    fd1 = UART_Open(fd1,"/dev/ttyS1"); //打开串口1，返回文件描述符
+    //*
+    fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
+    //fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
     if(fd1<0)
     { 
       printf("open port1 fail!\n");
@@ -598,9 +693,9 @@ int main(int argc, char **argv)
     {
        printf("UART_Init1 fail!\n");
        exit(1); 
-    }
+    }//*/
 
-    fd2 = UART_Open(fd2,"/dev/ttyS2"); //打开串口2，返回文件描述符
+    fd2 = UART_Open(fd2,"/dev/ttyS1"); //打开串口2，返回文件描述符
     if(fd2<0)
     { 
       printf("open port2 fail!\n");
@@ -612,36 +707,48 @@ int main(int argc, char **argv)
        printf("UART_Init2 fail!\n");
        exit(1); 
     }
+    
+    if(pthread_create(&com1_id,NULL,zhukongjieshou,(void *)&fd1)>0)//启动主控板接收线程
+    {
+        printf("the pthread zhukongjieshou faill!\n");
+        exit(1);
+    }
+
+    /*if(pthread_create(&com2_id,NULL,lcdjieshou,NULL)>0)
+    {
+        printf("the pthread lcdjieshou faill!\n");
+        exit(1);
+    }*/
 //enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
     
      Lcd_control(fd2,"page ultrasonic");
      //sleep(1);
      while (1) //循环读取数据
      { 
-        /* send_data(fd1,0,0x81,0x80,6); //主控板数据请求                      
-         len = get_data(fd1,receive_buf,reg_data);//主控板数据解帧		
-         if(len > 0)
-         { 
-           Lcd_set_val(fd2,"d0.val=",(reg_data[chaosheng1]>>8)*10);
-           Lcd_set_val(fd2,"d2.val=",(reg_data[chaosheng1]&0x00ff)*10);
-           Lcd_set_val(fd2,"d4.val=",(reg_data[chaosheng2]>>8)*10);
-           Lcd_set_val(fd2,"d6.val=",(reg_data[chaosheng2]&0x00ff)*10);
-           Lcd_set_val(fd2,"d8.val=",(reg_data[chaosheng3]>>8)*10);
-           Lcd_set_val(fd2,"da.val=",(reg_data[chaosheng3]&0x00ff)*10);
-           Lcd_set_val(fd2,"dc.val=",(reg_data[chaosheng4]>>8)*10);
-           Lcd_set_val(fd2,"de.val=",(reg_data[chaosheng4]&0x00ff)*10);
-           Lcd_set_val(fd2,"e0.val=",(reg_data[chaosheng5]>>8)*10);
-           Lcd_set_val(fd2,"e2.val=",(reg_data[chaosheng5]&0x00ff)*10);
-           Lcd_set_val(fd2,"e4.val=",(reg_data[chaosheng6]>>8)*10);
-           Lcd_set_val(fd2,"e8.val=",(reg_data[chaosheng6]&0x00ff)*10);
-           Lcd_set_val(fd2,"hongwaizuo.val=",(reg_data[hongwai2]>>8)*2);
-           Lcd_set_val(fd2,"hongwaiyou.val=",(reg_data[hongwai2]&0x00ff)*2);
-           sleep(1);     
-         }*/
-         printf("the touch is:%d",Lcd_touch_read(fd2));
+        
+         send_data(fd1,0,0x81,0x80,12); //主控板数据请求                               		
+         //if(real_data[0]!=0&&real_data[1]!=0&&real_data[2]!=0)
+        // { 
+           Lcd_set_val(fd2,"d0.val=",(real_data[chaosheng1]>>8)*10);
+           Lcd_set_val(fd2,"d2.val=",(real_data[chaosheng1]&0x00ff)*10);
+           Lcd_set_val(fd2,"d4.val=",(real_data[chaosheng2]>>8)*10);
+           Lcd_set_val(fd2,"d6.val=",(real_data[chaosheng2]&0x00ff)*10);
+           Lcd_set_val(fd2,"d8.val=",(real_data[chaosheng3]>>8)*10);
+           Lcd_set_val(fd2,"da.val=",(real_data[chaosheng3]&0x00ff)*10);
+           Lcd_set_val(fd2,"dc.val=",(real_data[chaosheng4]>>8)*10);
+           Lcd_set_val(fd2,"de.val=",(real_data[chaosheng4]&0x00ff)*10);
+           Lcd_set_val(fd2,"e0.val=",(real_data[chaosheng5]>>8)*10);
+           Lcd_set_val(fd2,"e2.val=",(real_data[chaosheng5]&0x00ff)*10);
+           Lcd_set_val(fd2,"e4.val=",(real_data[chaosheng6]>>8)*10);
+           Lcd_set_val(fd2,"e8.val=",(real_data[chaosheng6]&0x00ff)*10);
+           Lcd_set_val(fd2,"hongwaizuo.val=",(real_data[hongwai2]>>8)*2);
+           Lcd_set_val(fd2,"hongwaiyou.val=",(real_data[hongwai2]&0x00ff)*2);
+           //sleep(1);     
+         //}//*/
+         //printf("the touch is:%d",Lcd_touch_read(fd2));
+         sleep(1);
      }
    UART_Close(fd1);
-}//*/
-
+}
 
 
