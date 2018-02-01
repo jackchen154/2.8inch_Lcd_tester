@@ -5,14 +5,15 @@
 #include<string.h> 
 #include "uart.h"
 #include "lcd_window.h"
+#include "test.h"
 #define uchar unsigned char
 #define FALSE  -1
 #define TRUE   0
 
 //reg_nam为寄存器的具体名称 
-//enum reg_enum {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2};
+//enum reg_ename {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2};
 //reg_data为寄存器名称对应的实际地址 
-uchar reg[]={0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A};
+uchar reg[]={0x78,0x79,0x7a,0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A};
 
 //该为串口1(主控板)的接收全局变量
 //uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
@@ -20,8 +21,8 @@ uchar reg[]={0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x
 unsigned short real_data[50]={0};
 int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun);
 
-enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
-
+//enum window { Sensor_window, Control_window, Headctr_window, Hardwar_window, Return_button};//窗口页面名称
+//uchar lcd_status=0;//LCD_window的切换状态
 
 
 unsigned short get_crc(uchar *ptr,uchar len)
@@ -98,12 +99,12 @@ int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun)
 void *lcdjieshou(void* fd2)
 {
  //该为串口2lcd的接收全局变量
- uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
+ uchar data_buf[20]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
  int len;
  uchar rcv_buf;
  uchar i,j;
  unsigned short crc_result,ck_crc;
- unsigned short real_data1[2]; 
+ unsigned short real_data1[1]; 
  while(1)
  { 
 
@@ -165,11 +166,32 @@ void *lcdjieshou(void* fd2)
 		   data_len=0;
 		   frame_len=0;
 		   j=0; i=0;
-           printf("lcd_lcd\n");
-           if(real_data1[0]==0x0000)printf("page 1\n");
-           if(real_data1[0]==0x0001)printf("page 2\n");
-           if(real_data1[0]==0x0002)printf("page 3\n");
-           if(real_data1[0]==0x0003)printf("page 4\n");
+
+           if(real_data1[0]==0x0000)
+           {
+             printf("Control_window\n");
+             lcd_status=Control_window;
+           }
+           if(real_data1[0]==0x0001)
+           {
+             printf("Sensor_window\n");
+             lcd_status=Sensor_window;
+           }
+           if(real_data1[0]==0x0002)
+           {
+             printf("Headctr_window\n");
+             lcd_status=Headctr_window;
+           }
+           if(real_data1[0]==0x0003)
+           {
+             printf("versions_window\n");
+             lcd_status=versions_window;
+           } 
+           if(real_data1[0]==0x00bc)
+           {
+             printf("back button\n");
+             lcd_status=Return_button;
+           }          
            continue;
         }
       }        
@@ -280,20 +302,20 @@ int main(int argc, char **argv)
     pthread_t com1_id;
     pthread_t com2_id;
 
-    //*
-    fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
-    //fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
+    
+    //fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
+    fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
     if(fd1<0)
     { 
       printf("open port1 fail!\n");
       exit(1);
     }
 
-    if(UART_Init(fd1,0,115200,'N',8,1)<0)
+    if(UART_Init(fd1,0,38400,'N',8,1)<0)
     {
        printf("UART_Init1 fail!\n");
        exit(1); 
-    }//*/
+    }
 
     fd2 = UART_Open(fd2,"/dev/ttyS1"); //打开串口2，返回文件描述符
     if(fd2<0)
@@ -314,23 +336,43 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    //*
+    
     if(pthread_create(&com2_id,NULL,lcdjieshou,(void *)&fd2)>0)
     {
         printf("the pthread lcdjieshou faill!\n");
         exit(1);
-    }//*/
-    //enum window { Sensor_button, Control_button, Headctr_button, Hardwar_button, Return_button};//窗口页面名称
-    
-     Lcd_control(fd2,"page ultrasonic");
-     //sleep(1);
-     while (1) //循环读取数据
-     { 
-        send_data(fd1,0,0x81,0x80,12); //主控板数据请求         
-        ultrasonic_window(fd2,real_data);
+    }
+
+    Lcd_control(fd2,"page main");     
+    while(1)
+    { 
+
+          if(lcd_status==Sensor_window)
+          {   
+              Lcd_control(fd2,"page ultrasonic");     
+              while (1) //循环读取数据
+              { 
+                send_data(fd1,0,0x81,0x80,27); //主控板数据请求         
+                if(ultrasonic_window(fd2,real_data)<0) break;
+                sleep(1);
+              }
+           }
+
+           if(lcd_status==versions_window)
+           {   
+              Lcd_control(fd2,"page version");     
+              while (1) //循环读取数据
+              { 
+                //send_data(fd1,0,0x81,0x80,27); //主控板数据请求         
+                if(version_window(fd1,fd2,real_data)<0) break;
+                sleep(1);
+              }
+           } 
         sleep(1);
-     }
-   UART_Close(fd1);
+        printf("main window\n"); 
+      }//end while(1)
+
+     UART_Close(fd1);
 }
 
 

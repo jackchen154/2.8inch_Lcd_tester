@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include "uart.h"
 #include "lcd_window.h"
+#include "test.h"
 #define uchar unsigned char
 #define FALSE  -1
 #define TRUE   0
-enum reg_enum {zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2};
 
 int Lcd_control(int fd, char *cmd)//模式设置
 {
@@ -163,7 +163,56 @@ int Lcd_set_val(int fd, char *cmd, int val)//模式设置
 
 }
 
-void ultrasonic_window(int fd,unsigned short *real_data)// 传感器窗口数据刷新
+
+//tou_led.txt="V2.0.2"
+int Lcd_set_txt(int fd, char *cmd,unsigned short *real_data)//模式设置
+{
+
+  uchar *cmd_buf = (uchar *)cmd;
+  uchar clear_data=50;
+  uchar end_frame[]={0xff,0xff,0xff};//帧尾
+  uchar cmd_len=0;//命令字的长度
+  uchar disbuf[8]={0};
+  disbuf[0]='"';
+  disbuf[1]='V';
+  disbuf[2]=(*(real_data)>>8)+48;
+  disbuf[3]='.';
+  disbuf[4]=(*(real_data)&0x00ff)+48;
+  disbuf[5]='.';
+  disbuf[6]=(*(real_data+1)>>8)+48;
+  disbuf[7]='"';
+
+  while(*cmd_buf!='\0')
+  {
+    cmd_buf++;
+    cmd_len++;
+  }
+
+  cmd_len = UART_Send(fd,(uchar *)cmd,cmd_len);//发送LCD控制指令
+  if (cmd_len < 0 ) 
+  {
+     printf("Lcd_set_val发送失败\n");              
+     UART_clear_buf(fd);
+     return FALSE;
+  }
+
+  UART_Send(fd,disbuf,8);//发送值 
+
+  UART_Send(fd,end_frame,3);//帧尾部
+  
+  while(clear_data)
+  {
+    clear_data--;
+    *real_data=0x0000;
+    real_data++;
+  }
+   
+  return TRUE;    
+  
+}
+
+
+int ultrasonic_window(int fd,unsigned short *real_data)// 传感器窗口数据刷新
 {        
                               		
    Lcd_set_val(fd,"d0.val=",(*(real_data+chaosheng1) >> 8)*10);
@@ -180,7 +229,44 @@ void ultrasonic_window(int fd,unsigned short *real_data)// 传感器窗口数据
    Lcd_set_val(fd,"e8.val=",(*(real_data+chaosheng6) & 0x00ff)*10);
    Lcd_set_val(fd,"hongwaizuo.val=",(*(real_data+hongwai2) >> 8)*2);
    Lcd_set_val(fd,"hongwaiyou.val=",(*(real_data+hongwai2) & 0x00ff)*2);
-   //printf("the touch is:%d",Lcd_touch_read(fd2));
+   /*if(lcd_status==Return_button)
+   {
+        Lcd_control(fd,"page main");
+        lcd_status = main_window;
+        return -1;//如果受到返回信号
+   }*/
+   return 0;//正常刷新数据
 }
 
+
+int version_window(int fd0,int fd,unsigned short *real_data)// 传感器窗口数据刷新
+{        
+      //电源管理板
+      send_data(fd0,0,0x05,0x78,3);
+      Lcd_set_txt(fd,"dianyuanguanli.txt=",real_data);
+      /*/舵机板
+      send_data(fd0,0,0x01,0x78,3);
+      Lcd_set_txt(fd,"tou_duoji.txt=",real_data);
+      //左手
+      send_data(fd0,0,0x06,0x78,3);
+      Lcd_set_txt(fd,"zuoshou.txt=",real_data);
+      //右手
+      send_data(fd0,0,0x07,0x78,3);
+      Lcd_set_txt(fd,"youshou.txt=",real_data);
+      //头呼吸灯板
+      send_data(fd0,0,0x03,0x78,3);
+      Lcd_set_txt(fd,"tou_led.txt=",real_data);
+      //臂部灯板
+      send_data(fd0,0,0x04,0x78,3);
+      Lcd_set_txt(fd,"bibu_led.txt=",real_data);*/
+                             		
+     if(lcd_status==Return_button)
+     {
+        Lcd_control(fd,"page main");
+        lcd_status = main_window;
+        return -1;//如果受到返回信号
+     }
+   
+   return 0;//正常刷新数据
+}
 
