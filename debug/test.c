@@ -25,6 +25,14 @@ int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun);
 //uchar lcd_status=0;//LCD_window的切换状态
 
 
+//毫秒级别延时函数
+void  delayms(unsigned int ms)
+{
+   while(ms--)
+   usleep(1000);
+}
+
+
 unsigned short get_crc(uchar *ptr,uchar len)
 {
   uchar i;
@@ -365,11 +373,11 @@ int main(int argc, char **argv)
               { 
                 //send_data(fd1,0,0x81,0x80,27); //主控板数据请求         
                 if(version_window(fd1,fd2,real_data)<0) break;
-                sleep(1);
+                delayms(100);
               }
            } 
-        sleep(1);
-        printf("main window\n"); 
+        delayms(100);
+        //printf("main window\n"); 
       }//end while(1)
 
      UART_Close(fd1);
