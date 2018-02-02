@@ -195,7 +195,10 @@ int Lcd_set_txt(int fd, char *cmd,unsigned short *real_data)//模式设置
      UART_clear_buf(fd);
      return FALSE;
   }
-
+  
+  if(*(real_data)==0 && *(real_data+1)==0)
+  UART_Send(fd,(uchar *)"\"no device\"",11);
+  else
   UART_Send(fd,disbuf,8);//发送值 
 
   UART_Send(fd,end_frame,3);//帧尾部
@@ -229,36 +232,43 @@ int ultrasonic_window(int fd,unsigned short *real_data)// 传感器窗口数据�
    Lcd_set_val(fd,"e8.val=",(*(real_data+chaosheng6) & 0x00ff)*10);
    Lcd_set_val(fd,"hongwaizuo.val=",(*(real_data+hongwai2) >> 8)*2);
    Lcd_set_val(fd,"hongwaiyou.val=",(*(real_data+hongwai2) & 0x00ff)*2);
-   /*if(lcd_status==Return_button)
+   if(lcd_status==Return_button)
    {
         Lcd_control(fd,"page main");
         lcd_status = main_window;
         return -1;//如果受到返回信号
-   }*/
+   }
    return 0;//正常刷新数据
 }
 
 
 int version_window(int fd0,int fd,unsigned short *real_data)// 传感器窗口数据刷新
 {        
-      //电源管理板
+         
+       //电源管理板
       send_data(fd0,0,0x05,0x78,3);
+      delayms(30);
       Lcd_set_txt(fd,"dianyuanguanli.txt=",real_data);
-      /*/舵机板
+      //舵机板
       send_data(fd0,0,0x01,0x78,3);
+      delayms(30);
       Lcd_set_txt(fd,"tou_duoji.txt=",real_data);
       //左手
       send_data(fd0,0,0x06,0x78,3);
+      delayms(30);
       Lcd_set_txt(fd,"zuoshou.txt=",real_data);
       //右手
       send_data(fd0,0,0x07,0x78,3);
+      delayms(30);
       Lcd_set_txt(fd,"youshou.txt=",real_data);
       //头呼吸灯板
       send_data(fd0,0,0x03,0x78,3);
+      delayms(30);
       Lcd_set_txt(fd,"tou_led.txt=",real_data);
       //臂部灯板
       send_data(fd0,0,0x04,0x78,3);
-      Lcd_set_txt(fd,"bibu_led.txt=",real_data);*/
+      delayms(30);
+      Lcd_set_txt(fd,"bibu_led.txt=",real_data);
                              		
      if(lcd_status==Return_button)
      {
