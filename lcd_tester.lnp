@@ -1,0 +1,5 @@
+"uart.obj",
+"lcd_window.obj",
+"main.obj" 
+TO "lcd_tester" 
+RAMSIZE(256) 

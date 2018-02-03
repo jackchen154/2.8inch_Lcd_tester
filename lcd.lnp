@@ -1,3 +1,0 @@
-"debug_lcd.obj" 
-TO "lcd" 
-RAMSIZE(256) 

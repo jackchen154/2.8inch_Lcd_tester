@@ -1,3 +1,8 @@
+#ifndef __STC12C5A60S2_H_
+#define __STC12C5A60S2_H_
+
+/////////////////////////////////////////////////
+
 //--------------------------------------------------------------------------------
 //新一代 1T 8051系列 单片机内核特殊功能寄存器 C51 Core SFRs
 //                                          7     6      5       4     3    2    1     0   Reset Value
@@ -123,25 +128,69 @@ sfr IPH2  = 0xB6; //                       -      -      -     -     -     -   P
 //新一代 1T 8051系列 单片机I/O 口特殊功能寄存器
 //                                      7     6     5     4     3     2     1     0         Reset Value
 sfr P0   = 0x80; //8 bitPort0          P0.7  P0.6  P0.5  P0.4  P0.3  P0.2  P0.1  P0.0       1111,1111
+sbit P00 = P0^0;
+sbit P01 = P0^1;
+sbit P02 = P0^2;
+sbit P03 = P0^3;
+sbit P04 = P0^4;
+sbit P05 = P0^5;
+sbit P06 = P0^6;
+sbit P07 = P0^7;
 sfr P0M0 = 0x94; //                                                                         0000,0000
 sfr P0M1 = 0x93; //                                                                         0000,0000
 sfr P1   = 0x90; //8 bitPort1          P1.7  P1.6  P1.5  P1.4  P1.3  P1.2  P1.1  P1.0       1111,1111
+sbit P10 = P1^0;
+sbit P11 = P1^1;
+sbit P12 = P1^2;
+sbit P13 = P1^3;
+sbit P14 = P1^4;
+sbit P15 = P1^5;
+sbit P16 = P1^6;
+sbit P17 = P1^7;
 sfr P1M0 = 0x92; //                                                                         0000,0000
 sfr P1M1 = 0x91; //                                                                         0000,0000
 sfr P1ASF = 0x9D; //P1 analog special function
 sfr P2   = 0xA0; //8 bitPort2          P2.7  P2.6  P2.5  P2.4  P2.3  P2.2  P2.1  P2.0       1111,1111
+sbit P20 = P2^0;
+sbit P21 = P2^1;
+sbit P22 = P2^2;
+sbit P23 = P2^3;
+sbit P24 = P2^4;
+sbit P25 = P2^5;
+sbit P26 = P2^6;
+sbit P27 = P2^7;
 sfr P2M0 = 0x96; //                                                                         0000,0000
 sfr P2M1 = 0x95; //                                                                         0000,0000
 sfr P3   = 0xB0; //8 bitPort3          P3.7  P3.6  P3.5  P3.4  P3.3  P3.2  P3.1  P3.0       1111,1111
+sbit P30 = P3^0;
+sbit P31 = P3^1;
+sbit P32 = P3^2;
+sbit P33 = P3^3;
+sbit P34 = P3^4;
+sbit P35 = P3^5;
+sbit P36 = P3^6;
+sbit P37 = P3^7;
 sfr P3M0 = 0xB2; //                                                                         0000,0000
 sfr P3M1 = 0xB1; //                                                                         0000,0000
 sfr P4   = 0xC0; //8 bitPort4          P4.7  P4.6  P4.5  P4.4  P4.3  P4.2  P4.1  P4.0       1111,1111
+sbit P40 = P4^0;
+sbit P41 = P4^1;
+sbit P42 = P4^2;
+sbit P43 = P4^3;
+sbit P44 = P4^4;
+sbit P45 = P4^5;
+sbit P46 = P4^6;
+sbit P47 = P4^7;
 sfr P4M0 = 0xB4; //                                                                         0000,0000
 sfr P4M1 = 0xB3; //                                                                         0000,0000
 //                                      7      6         5         4      3     2     1     0     Reset Value
-sfr P4SW = 0xBB; //Port-4 switch	    -   LVD_P4.6  ALE_P4.5  NA_P4.4   -     -     -     -	    x000,xxxx
+sfr P4SW = 0xBB; //Port-4 switch        -   LVD_P4.6  ALE_P4.5  NA_P4.4   -     -     -     -       x000,xxxx
 
 sfr P5   = 0xC8; //8 bitPort5           -     -       -      -    P5.3  P5.2  P5.1  P5.0    xxxx,1111
+sbit P50 = P5^0;
+sbit P51 = P5^1;
+sbit P52 = P5^2;
+sbit P53 = P5^3;
 sfr P5M0 = 0xCA; //                                                                         0000,0000
 sfr P5M1 = 0xC9; //                                                                         0000,0000
 //--------------------------------------------------------------------------------
@@ -273,8 +322,8 @@ sfr PCA_PWM1 = 0xF3; //PCA 模块1 PWM 寄存器。            -   -   -   -   -   -  
 //新一代 1T 8051系列 单片机 ADC 特殊功能寄存器
 //                                            7        6      5       4         3      2    1    0   Reset Value
 sfr ADC_CONTR = 0xBC; //A/D 转换控制寄存器 ADC_POWER SPEED1 SPEED0 ADC_FLAG ADC_START CHS2 CHS1 CHS0 0000,0000
-sfr ADC_RES  = 0xBD;  //A/D 转换结果高8位 ADCV.9 ADCV.8 ADCV.7 ADCV.6 ADCV.5 ADCV.4 ADCV.3 ADCV.2	 0000,0000
-sfr ADC_RESL = 0xBE;  //A/D 转换结果低2位                                           ADCV.1 ADCV.0	 0000,0000
+sfr ADC_RES  = 0xBD;  //A/D 转换结果高8位 ADCV.9 ADCV.8 ADCV.7 ADCV.6 ADCV.5 ADCV.4 ADCV.3 ADCV.2    0000,0000
+sfr ADC_RESL = 0xBE;  //A/D 转换结果低2位                                           ADCV.1 ADCV.0    0000,0000
 //--------------------------------------------------------------------------------
 //新一代 1T 8051系列 单片机 SPI 特殊功能寄存器
 //                                      7     6     5     4     3     2     1     0    Reset Value
@@ -291,4 +340,8 @@ sfr IAP_CMD     = 0xC5; //IAP Mode Table          0    -    -      -    -    -  
 sfr IAP_TRIG    = 0xC6;
 sfr IAP_CONTR   = 0xC7; //IAP Control Register  IAPEN SWBS SWRST CFAIL  -   WT2  WT1   WT0   0000,x000
 //--------------------------------------------------------------------------------
+
+/////////////////////////////////////////////////
+
+#endif
 
