@@ -151,7 +151,9 @@ void Main(void)
 
            if(lcd_status==versions_window)
            {   
-              Lcd_control("page version");     
+              TH1 = 0xf7;	//定时器初值高8位设置38400
+	          TL1 = TH1;	//定时器初值低8位设置
+			  Lcd_control("page version");     
               while (1) 
               { 
                 if(version_window(real_data)<0) break;
