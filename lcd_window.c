@@ -1,3 +1,4 @@
+#include "STC12C5A.h"
 #include "uart.h"
 #include "lcd_window.h"
 #include "main.h"
@@ -132,7 +133,12 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
 
 int ultrasonic_window(unsigned short *real_data)// 传感器窗口数据刷新
 {        
-   uchar clear_data=50;                           		
+   uchar clear_data=50; 
+
+   TH1 = 0xFD;		
+	 TL1 = TH1;	//115200
+	 send_data(0x81,0x80,27); 
+	 delayms(30);
    Lcd_set_val("d0.val=",(*(real_data+chaosheng1) >> 8)*10);
    Lcd_set_val("d2.val=",(*(real_data+chaosheng1) & 0x00ff)*10);
    Lcd_set_val("d4.val=",(*(real_data+chaosheng2) >>8)*10);
@@ -165,7 +171,9 @@ int ultrasonic_window(unsigned short *real_data)// 传感器窗口数据刷新
 
 int version_window(unsigned short *real_data)// 传感器窗口数据刷新
 {        
-         
+       TH1 = 0xf7;	
+	     TL1 = TH1;	//38400波特率 
+			 delayms(30);
        //电源管理板
       send_data(0x05,0x78,3);
       delayms(30);
@@ -190,7 +198,27 @@ int version_window(unsigned short *real_data)// 传感器窗口数据刷新
       send_data(0x04,0x78,3);
       delayms(30);
       Lcd_set_txt("bibu_led.txt=",real_data);
-                             		
+      delayms(30);
+			
+		  TH1 = 0xFD;		
+		  TL1 = TH1;	//115200波特率	
+			//主控板
+			send_data(0x81,0x78,3);
+      delayms(30);
+      Lcd_set_txt("zhukong.txt=",real_data);
+			//超宽带
+			send_data(0x81,0xB1,3);
+      delayms(30);
+      Lcd_set_txt("chaokuandai.txt=",real_data);			
+			//左轮
+			send_data(0x81,0xB4,3);
+      delayms(30);
+      Lcd_set_txt("zuolun.txt=",real_data);	
+			//右轮
+			send_data(0x81,0xB7,3);
+      delayms(30);
+      Lcd_set_txt("youlun.txt=",real_data);
+			
      if(lcd_status==Return_button)
      {
         Lcd_control("page main");
