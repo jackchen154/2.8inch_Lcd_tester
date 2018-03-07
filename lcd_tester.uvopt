@@ -174,10 +174,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>47</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
       <TopLine>205</TopLine>
-      <CurrentLine>205</CurrentLine>
+      <CurrentLine>216</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\lcd_window.c</PathWithFileName>
       <FilenameWithoutPath>lcd_window.c</FilenameWithoutPath>
@@ -1605,9 +1605,9 @@
         </Doc>
         <Doc>
           <Name>.\lcd_window.c</Name>
-          <ColumnNumber>0</ColumnNumber>
+          <ColumnNumber>47</ColumnNumber>
           <TopLine>205</TopLine>
-          <CurrentLine>205</CurrentLine>
+          <CurrentLine>216</CurrentLine>
         </Doc>
         <Doc>
           <Name>LCD_WINDOW.H</Name>

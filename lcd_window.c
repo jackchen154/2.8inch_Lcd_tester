@@ -213,7 +213,7 @@ int version_window(unsigned short *real_data)// 传感器窗口数据刷新
 			//左轮
 			send_data(0x81,0xB4,3);
       delayms(30);
-      Lcd_set_txt("zuolun.txt=",real_data);	
+      Lcd_set_txt("zuolun.txt=",real_data);	   
 			//右轮
 			send_data(0x81,0xB7,3);
       delayms(30);

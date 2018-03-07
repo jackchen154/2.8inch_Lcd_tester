@@ -1,9 +1,9 @@
-C51 COMPILER V9.00   LCD_WINDOW                                                            02/28/2018 21:54:03 PAGE 1   
+C51 COMPILER V9.00   LCD_WINDOW                                                            03/05/2018 17:58:39 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE LCD_WINDOW
 OBJECT MODULE PLACED IN lcd_window.OBJ
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE lcd_window.c LARGE BROWSE DEBUG OBJECTEXTEND TABS(2)
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE lcd_window.c LARGE BROWSE DEBUG OBJECTEXTEND
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52   2        } while (dat > 0);
   53   1        len += i;                 // i最后的值就是有效字符的个数
   54   1        while (i-- > 0)           // 高位在前低位在后顺序排列
-C51 COMPILER V9.00   LCD_WINDOW                                                            02/28/2018 21:54:03 PAGE 2   
+C51 COMPILER V9.00   LCD_WINDOW                                                            03/05/2018 17:58:39 PAGE 2   
 
   55   1        {
   56   2          *str++ = buf[i] ;
@@ -126,7 +126,7 @@ line level    source
  113   2        }
  114   1      
  115   1        UART2_Send((uchar *)cmd,cmd_len);//发送LCD控制指令
-C51 COMPILER V9.00   LCD_WINDOW                                                            02/28/2018 21:54:03 PAGE 3   
+C51 COMPILER V9.00   LCD_WINDOW                                                            03/05/2018 17:58:39 PAGE 3   
 
  116   1        
  117   1        if(*(real_data)==0 && *(real_data+1)==0)
@@ -149,102 +149,103 @@ line level    source
  134          int ultrasonic_window(unsigned short *real_data)// 传感器窗口数据刷新
  135          {        
  136   1         uchar clear_data=50; 
- 137   1         TH1 = 0xFD;    
- 138   1         TL1 = TH1; //115200
- 139   1         send_data(0x81,0x80,27); 
- 140   1         delayms(30);
- 141   1         Lcd_set_val("d0.val=",(*(real_data+chaosheng1) >> 8)*10);
- 142   1         Lcd_set_val("d2.val=",(*(real_data+chaosheng1) & 0x00ff)*10);
- 143   1         Lcd_set_val("d4.val=",(*(real_data+chaosheng2) >>8)*10);
- 144   1         Lcd_set_val("d6.val=",(*(real_data+chaosheng2) & 0x00ff)*10);
- 145   1         Lcd_set_val("d8.val=",(*(real_data+chaosheng3) >> 8)*10);
- 146   1         Lcd_set_val("da.val=",(*(real_data+chaosheng3) & 0x00ff)*10);
- 147   1         Lcd_set_val("dc.val=",(*(real_data+chaosheng4) >> 8)*10);
- 148   1         Lcd_set_val("de.val=",(*(real_data+chaosheng4) & 0x00ff)*10);
- 149   1         Lcd_set_val("e0.val=",(*(real_data+chaosheng5) >> 8)*10);
- 150   1         Lcd_set_val("e2.val=",(*(real_data+chaosheng5) & 0x00ff)*10);
- 151   1         Lcd_set_val("e4.val=",(*(real_data+chaosheng6) >> 8)*10);
- 152   1         Lcd_set_val("e8.val=",(*(real_data+chaosheng6) & 0x00ff)*10);
- 153   1         Lcd_set_val("hongwaizuo.val=",(*(real_data+hongwai2) >> 8)*2);
- 154   1         Lcd_set_val("hongwaiyou.val=",(*(real_data+hongwai2) & 0x00ff)*2);
- 155   1         
- 156   1         while(clear_data--)
- 157   1         {
- 158   2          *real_data=0x0000;
- 159   2          real_data++;
- 160   2         }
- 161   1         if(lcd_status==Return_button)
- 162   1         {
- 163   2              Lcd_control("page main");
- 164   2              lcd_status = main_window;
- 165   2              return -1;//如果受到返回信号
- 166   2         }
- 167   1         return 0;//正常刷新数据
- 168   1      }
- 169          
+ 137   1      
+ 138   1         TH1 = 0xFD;          
+ 139   1               TL1 = TH1;     //115200
+ 140   1               send_data(0x81,0x80,27); 
+ 141   1               delayms(30);
+ 142   1         Lcd_set_val("d0.val=",(*(real_data+chaosheng1) >> 8)*10);
+ 143   1         Lcd_set_val("d2.val=",(*(real_data+chaosheng1) & 0x00ff)*10);
+ 144   1         Lcd_set_val("d4.val=",(*(real_data+chaosheng2) >>8)*10);
+ 145   1         Lcd_set_val("d6.val=",(*(real_data+chaosheng2) & 0x00ff)*10);
+ 146   1         Lcd_set_val("d8.val=",(*(real_data+chaosheng3) >> 8)*10);
+ 147   1         Lcd_set_val("da.val=",(*(real_data+chaosheng3) & 0x00ff)*10);
+ 148   1         Lcd_set_val("dc.val=",(*(real_data+chaosheng4) >> 8)*10);
+ 149   1         Lcd_set_val("de.val=",(*(real_data+chaosheng4) & 0x00ff)*10);
+ 150   1         Lcd_set_val("e0.val=",(*(real_data+chaosheng5) >> 8)*10);
+ 151   1         Lcd_set_val("e2.val=",(*(real_data+chaosheng5) & 0x00ff)*10);
+ 152   1         Lcd_set_val("e4.val=",(*(real_data+chaosheng6) >> 8)*10);
+ 153   1         Lcd_set_val("e8.val=",(*(real_data+chaosheng6) & 0x00ff)*10);
+ 154   1         Lcd_set_val("hongwaizuo.val=",(*(real_data+hongwai2) >> 8)*2);
+ 155   1         Lcd_set_val("hongwaiyou.val=",(*(real_data+hongwai2) & 0x00ff)*2);
+ 156   1               
+ 157   1               while(clear_data--)
+ 158   1         {
+ 159   2          *real_data=0x0000;
+ 160   2          real_data++;
+ 161   2         }
+ 162   1         if(lcd_status==Return_button)
+ 163   1         {
+ 164   2              Lcd_control("page main");
+ 165   2              lcd_status = main_window;
+ 166   2              return -1;//如果受到返回信号
+ 167   2         }
+ 168   1         return 0;//正常刷新数据
+ 169   1      }
  170          
- 171          int version_window(unsigned short *real_data)// 传感器窗口数据刷新
- 172          {        
- 173   1             TH1 = 0xf7;  
- 174   1             TL1 = TH1; //38400波特率 
- 175   1             delayms(30);
- 176   1             //电源管理板
- 177   1            send_data(0x05,0x78,3);
-C51 COMPILER V9.00   LCD_WINDOW                                                            02/28/2018 21:54:03 PAGE 4   
+ 171          
+ 172          int version_window(unsigned short *real_data)// 传感器窗口数据刷新
+ 173          {        
+ 174   1             TH1 = 0xf7;      
+ 175   1                   TL1 = TH1; //38400波特率 
+ 176   1                               delayms(30);
+ 177   1             //电源管理板
+C51 COMPILER V9.00   LCD_WINDOW                                                            03/05/2018 17:58:39 PAGE 4   
 
- 178   1            delayms(30);
- 179   1            Lcd_set_txt("dianyuanguanli.txt=",real_data);
- 180   1            //舵机板
- 181   1            send_data(0x01,0x78,3);
- 182   1            delayms(30);
- 183   1            Lcd_set_txt("tou_duoji.txt=",real_data);
- 184   1            //左手
- 185   1            send_data(0x06,0x78,3);
- 186   1            delayms(30);
- 187   1            Lcd_set_txt("zuoshou.txt=",real_data);
- 188   1            //右手
- 189   1            send_data(0x07,0x78,3);
- 190   1            delayms(30);
- 191   1            Lcd_set_txt("youshou.txt=",real_data);
- 192   1            //头呼吸灯板
- 193   1            send_data(0x03,0x78,3);
- 194   1            delayms(30);
- 195   1            Lcd_set_txt("tou_led.txt=",real_data);
- 196   1            //臂部灯板
- 197   1            send_data(0x04,0x78,3);
- 198   1            delayms(30);
- 199   1            Lcd_set_txt("bibu_led.txt=",real_data);
- 200   1            delayms(30);
- 201   1            
- 202   1            TH1 = 0xFD;   
- 203   1            TL1 = TH1;  //115200波特率 
- 204   1            //主控板
- 205   1            send_data(0x81,0x78,3);
- 206   1            delayms(30);
- 207   1            Lcd_set_txt("zhukong.txt=",real_data);
- 208   1            //超宽带
- 209   1            send_data(0x81,0xB1,3);
- 210   1            delayms(30);
- 211   1            Lcd_set_txt("chaokuandai.txt=",real_data);      
- 212   1            //左轮
- 213   1            send_data(0x81,0xB4,3);
- 214   1            delayms(30);
- 215   1            Lcd_set_txt("zuolun.txt=",real_data); 
- 216   1            //右轮
- 217   1            send_data(0x81,0xB7,3);
- 218   1            delayms(30);
- 219   1            Lcd_set_txt("youlun.txt=",real_data);
- 220   1            
- 221   1           if(lcd_status==Return_button)
- 222   1           {
- 223   2              Lcd_control("page main");
- 224   2              lcd_status = main_window;
- 225   2              return -1;//如果受到返回信号
- 226   2           }
- 227   1         
- 228   1         return 0;//正常刷新数据
- 229   1      }
- 230          
+ 178   1            send_data(0x05,0x78,3);
+ 179   1            delayms(30);
+ 180   1            Lcd_set_txt("dianyuanguanli.txt=",real_data);
+ 181   1            //舵机板
+ 182   1            send_data(0x01,0x78,3);
+ 183   1            delayms(30);
+ 184   1            Lcd_set_txt("tou_duoji.txt=",real_data);
+ 185   1            //左手
+ 186   1            send_data(0x06,0x78,3);
+ 187   1            delayms(30);
+ 188   1            Lcd_set_txt("zuoshou.txt=",real_data);
+ 189   1            //右手
+ 190   1            send_data(0x07,0x78,3);
+ 191   1            delayms(30);
+ 192   1            Lcd_set_txt("youshou.txt=",real_data);
+ 193   1            //头呼吸灯板
+ 194   1            send_data(0x03,0x78,3);
+ 195   1            delayms(30);
+ 196   1            Lcd_set_txt("tou_led.txt=",real_data);
+ 197   1            //臂部灯板
+ 198   1            send_data(0x04,0x78,3);
+ 199   1            delayms(30);
+ 200   1            Lcd_set_txt("bibu_led.txt=",real_data);
+ 201   1            delayms(30);
+ 202   1                              
+ 203   1                        TH1 = 0xFD;           
+ 204   1                        TL1 = TH1;    //115200波特率       
+ 205   1                              //主控板
+ 206   1                              send_data(0x81,0x78,3);
+ 207   1            delayms(30);
+ 208   1            Lcd_set_txt("zhukong.txt=",real_data);
+ 209   1                              //超宽带
+ 210   1                              send_data(0x81,0xB1,3);
+ 211   1            delayms(30);
+ 212   1            Lcd_set_txt("chaokuandai.txt=",real_data);                        
+ 213   1                              //左轮
+ 214   1                              send_data(0x81,0xB4,3);
+ 215   1            delayms(30);
+ 216   1            Lcd_set_txt("zuolun.txt=",real_data);        
+ 217   1                              //右轮
+ 218   1                              send_data(0x81,0xB7,3);
+ 219   1            delayms(30);
+ 220   1            Lcd_set_txt("youlun.txt=",real_data);
+ 221   1                              
+ 222   1           if(lcd_status==Return_button)
+ 223   1           {
+ 224   2              Lcd_control("page main");
+ 225   2              lcd_status = main_window;
+ 226   2              return -1;//如果受到返回信号
+ 227   2           }
+ 228   1         
+ 229   1         return 0;//正常刷新数据
+ 230   1      }
+ 231          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
@@ -253,9 +254,9 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    XDATA SIZE       =   ----      68
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
-   IDATA SIZE       =   ----    ----
-C51 COMPILER V9.00   LCD_WINDOW                                                            02/28/2018 21:54:03 PAGE 5   
+C51 COMPILER V9.00   LCD_WINDOW                                                            03/05/2018 17:58:39 PAGE 5   
 
+   IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 
