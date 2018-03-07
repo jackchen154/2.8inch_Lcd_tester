@@ -11,7 +11,7 @@
 #include "uart.h"
 #define FALSE  -1
 #define TRUE   0
-#define Time_out 60 //串口超时时间设置
+#define Time_out 120 //串口超时时间设置
 
 
 /*******************************************************************

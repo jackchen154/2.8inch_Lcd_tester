@@ -6,5 +6,6 @@ int Lcd_set_val(int fd, char *cmd, int val);//模式设置
 
 int ultrasonic_window(int fd,unsigned short *real_data);
 int version_window(int fd0,int fd,unsigned short *real_data);
+int motor_ctrl_window(int fd0,int fd,unsigned short *real_data);//舵机控制窗口
 #endif
 

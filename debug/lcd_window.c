@@ -280,3 +280,190 @@ int version_window(int fd0,int fd,unsigned short *real_data)// 传感器窗口�
    return 0;//正常刷新数据
 }
 
+int motor_ctrl_window(int fd0,int fd,unsigned short *real_data)//舵机控制窗口
+{        
+         
+
+      send_data(fd0,0,0x01,0x7e,2);
+      delayms(30);
+      Lcd_set_val(fd,"hbianmaqiz.val=", (int)(*(real_data)));
+      delayms(30);
+      Lcd_set_val(fd,"hbiaodingz.val=", (int)(*(real_data+1)));
+      /*头部控制部分
+      if(lcd_status==hbiaoding)//头部标定检测
+      {
+        printf("hbiaoding\n");
+        motor_contrl_send(fd0,0x01,0x05,0,0);
+        delayms(10);
+        motor_contrl_send(fd0,0x01,0x05,0,0);
+        delayms(10);         
+        motor_contrl_send(fd0,0x01,0x00,0,0);
+      }
+      if(lcd_status==hzuo)//头部正转
+      {
+        printf("hzuo\n");
+        motor_contrl_send(fd0,0x01,0x01,20,0);    
+      }
+      if(lcd_status==hyou)//头部反转
+      {
+        printf("hyou\n");
+        motor_contrl_send(fd0,0x01,0x02,20,0);        
+      }
+      if(lcd_status==hzhong)//头部正中
+      {
+        printf("hzhong\n");
+        motor_contrl_send(fd0,0x01,0x03,20,180);
+        delayms(1000);
+        motor_contrl_send(fd0,0x01,0x00,0,0);        
+      }*/
+
+      //左手控制部分
+      if(lcd_status==zbiaoding)//左手标定检测
+      {
+        printf("zbiaoding\n");
+        motor_contrl_send(fd0,0x06,0x05,0,0);
+        delayms(10);
+        motor_contrl_send(fd0,0x06,0x05,0,0);
+        delayms(10);         
+        motor_contrl_send(fd0,0x06,0x00,0,0);//退出标定状态
+      }
+      if(lcd_status==zzuo)//左手正转
+      {
+        printf("zzuo\n");
+        motor_contrl_send(fd0,0x06,0x01,20,0);    
+      }
+      if(lcd_status==zyou)//左手反转
+      {
+        printf("zyou\n");
+        motor_contrl_send(fd0,0x06,0x02,20,0);        
+      }
+      if(lcd_status==zzhong)//左手正中
+      {
+        printf("zzhong\n");
+        motor_contrl_send(fd0,0x06,0x03,20,180);
+        delayms(1000);
+        motor_contrl_send(fd0,0x06,0x00,0,0);        
+      }
+
+      /*右手控制部分
+      if(lcd_status==ybiaoding)//左手标定检测
+      {
+        printf("ybiaoding\n");
+        motor_contrl_send(fd0,0x07,0x05,0,0);
+        delayms(10);
+        motor_contrl_send(fd0,0x07,0x05,0,0);
+        delayms(10);         
+        motor_contrl_send(fd0,0x07,0x00,0,0);//退出标定状态
+      }
+      if(lcd_status==yzuo)//左手正转
+      {
+        printf("yzuo\n");
+        motor_contrl_send(fd0,0x07,0x01,20,0);    
+      }
+      if(lcd_status==yyou)//左手反转
+      {
+        printf("yyou\n");
+        motor_contrl_send(fd0,0x07,0x02,20,0);        
+      }
+      if(lcd_status==yzhong)//左手正中
+      {
+        printf("yzhong\n");
+        motor_contrl_send(fd0,0x07,0x03,20,180);
+        delayms(1000);
+        motor_contrl_send(fd0,0x07,0x00,0,0);        
+      }
+
+      //LED灯板控制部分
+      if(lcd_status==zui0)
+      {
+        printf("zui0\n");
+        led_contrl_send(fd0,0x03,0,0,100);
+      }
+      if(lcd_status==zui1)
+      {
+        printf("zui1\n");
+        led_contrl_send(fd0,0x03,50,0,100);
+      }
+      if(lcd_status==yan0)
+      {
+        printf("yan0\n");
+        led_contrl_send(fd0,0x03,0,0,100);
+      }
+      if(lcd_status==yan1)
+      {
+        printf("yan1\n");
+        led_contrl_send(fd0,0x03,0,50,100);
+      }
+
+      //连续控制部分
+      if(lcd_status==alianxu1)
+      {
+        printf("alianxu1\n");
+        while(1)
+        {
+          motor_contrl_send(fd0,0x01,0x01,20,0);//头部正转
+          delayms(30);
+          motor_contrl_send(fd0,0x06,0x01,20,0);//左手正转 
+          delayms(30);
+          motor_contrl_send(fd0,0x07,0x01,20,0);//右手正转 
+          delayms(30);
+          if(lcd_status==alianxu0) break;//退出检测     
+          delayms(2000);
+          if(lcd_status==alianxu0) break;//退出检测     
+          motor_contrl_send(fd0,0x01,0x02,20,0);//头部反转       
+          delayms(30);
+          motor_contrl_send(fd0,0x06,0x02,20,0);//左手反转
+          delayms(30);
+          motor_contrl_send(fd0,0x07,0x02,20,0);//右手反转
+          delayms(30);
+          if(lcd_status==alianxu0) break;//退出检测     
+          delayms(2000);
+
+          if(lcd_status==alianxu0) break;//退出检测       
+        }
+        printf("alianxu0\n");
+        //退出回正
+        motor_contrl_send(fd0,0x01,0x03,20,180);//头回正
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x03,20,180);//左手回正
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x03,20,180);//右手回正
+        delayms(30);
+        delayms(1000);//等待回正完毕
+
+        //退出后设置为自然停止
+        motor_contrl_send(fd0,0x01,0x00,0,0);//头停止 
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x00,0,0);//左手停止 
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x00,0,0);//右手停止
+        delayms(30);      
+      }*/
+
+     if(lcd_status==Return_button)//按下退出按键
+     {
+        printf("return_button\n");
+        Lcd_control(fd,"page main");
+        lcd_status = main_window;
+        //退出回正
+        motor_contrl_send(fd0,0x01,0x03,20,180);//头回正
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x03,20,180);//左手回正
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x03,20,180);//右手回正
+        delayms(30);
+        delayms(1000);//等待回正完毕
+        //退出后设置为自然停止
+        motor_contrl_send(fd0,0x01,0x00,0,0);//头停止 
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x00,0,0);//左手停止 
+        delayms(30);
+        motor_contrl_send(fd0,0x01,0x00,0,0);//右手停止
+        delayms(30); 
+
+        return -1;//如果受到返回信号
+     }
+
+     lcd_status=0;//状态清零
+   return 0;//正常刷新数据
+}

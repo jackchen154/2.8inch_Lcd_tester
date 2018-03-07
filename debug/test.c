@@ -81,16 +81,16 @@ int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun)
 	  crc=get_crc(&read_buf[3],6);
 	  read_buf[9]=crc&0xff;
 	  read_buf[10]=(crc>>8)&0xff;
-	  printf("\n\nsend data is:");
-	  for(i=0;i<11;i++)
+	  //printf("\n\nsend data is:");
+	  /*for(i=0;i<11;i++)
 
 	  printf("%x ",read_buf[i]);
  	  printf("  ");
-	 
+	 */
 	  len = UART_Send(fd,read_buf,11);
           if (len == 11 ) 
  	  {
-             printf("send sucess!\n\n");
+             //printf("send sucess!\n\n");
              return len;
           }
           else   
@@ -99,9 +99,115 @@ int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun)
             return FALSE;
           }
 	}
+
    return TRUE;
 }
 
+//(fd0,05,05,20,180)
+int motor_contrl_send(int fd, uchar device_n,uchar ctrl_mode,uchar speed,unsigned int weizhi)
+{
+      unsigned int crc,i,len;
+      uchar read_buf[30]={0xaa,0x55,0xcc};
+	  read_buf[3]=device_n;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x00;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x07;
+
+      read_buf[9]=0x0e;
+
+      read_buf[10]=0x00;
+      read_buf[11]=ctrl_mode;
+
+      read_buf[12]=0x00;
+      read_buf[13]=speed;
+
+      read_buf[14]=weizhi>>8;
+      read_buf[15]=weizhi&0x00ff;
+
+      read_buf[16]=0x12;
+      read_buf[17]=0x0c;
+
+      read_buf[18]=0x00;
+      read_buf[19]=0x46;
+
+      read_buf[20]=0x00;
+      read_buf[21]=0x07;
+
+      read_buf[22]=0x00;
+      read_buf[23]=0x00;
+
+	  crc=get_crc(&read_buf[3],21);
+	  read_buf[24]=crc&0xff;
+	  read_buf[25]=(crc>>8)&0xff;
+	  //*printf("\n\nsend data is:");
+	  for(i=0;i<26;i++)
+
+	  printf("%x ",read_buf[i]);
+ 	  printf("  ");
+	 //*/
+	  len = UART_Send(fd,read_buf,26);
+      if (len == 26 ) 
+ 	  {
+             printf("send sucess!\n\n");
+             return len;
+      }
+      else   
+      {               
+         UART_clear_buf(fd);
+         return FALSE;
+      }
+	
+}
+
+
+int led_contrl_send(int fd, uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar liangdu)
+{
+      unsigned int crc,len;
+      uchar read_buf[17]={0xaa,0x55,0xcc};
+	  read_buf[3]=device_n;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x00;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x03;
+
+      read_buf[9]=0x06;
+
+      read_buf[10]=0x00;
+      read_buf[11]=led1_cycle;
+
+      read_buf[12]=0x00;
+      read_buf[13]=led2_cycle;
+
+
+	  crc=get_crc(&read_buf[3],13);
+	  read_buf[14]=crc&0xff;
+	  read_buf[15]=(crc>>8)&0xff;
+	  //printf("\n\nsend data is:");
+	  /*for(i=0;i<11;i++)
+
+	  printf("%x ",read_buf[i]);
+ 	  printf("  ");
+	 */
+	  len = UART_Send(fd,read_buf,16);
+      if (len == 16 ) 
+ 	  {
+             //printf("send sucess!\n\n");
+             return len;
+      }
+      else   
+      {               
+         UART_clear_buf(fd);
+         return FALSE;
+      }
+	
+}
 
 //*
 void *lcdjieshou(void* fd2)
@@ -175,31 +281,132 @@ void *lcdjieshou(void* fd2)
 		   frame_len=0;
 		   j=0; i=0;
 
+           //页面窗口部件
            if(real_data1[0]==0x0000)
            {
-             printf("Control_window\n");
+             //printf("Control_window\n");
              lcd_status=Control_window;
            }
            if(real_data1[0]==0x0001)
            {
-             printf("Sensor_window\n");
+             //printf("Sensor_window\n");
              lcd_status=Sensor_window;
            }
            if(real_data1[0]==0x0002)
            {
-             printf("Headctr_window\n");
+             //printf("Headctr_window\n");
              lcd_status=Headctr_window;
            }
            if(real_data1[0]==0x0003)
            {
-             printf("versions_window\n");
+             //printf("versions_window\n");
              lcd_status=versions_window;
            } 
            if(real_data1[0]==0x00bc)
            {
-             printf("back button\n");
+             //printf("back button\n");
              lcd_status=Return_button;
-           }          
+           }
+           //头部窗口部件
+           if(real_data1[0]==0x0300)
+           {
+             //printf("hbiaoding\n");
+             lcd_status=hbiaoding;
+           }
+           if(real_data1[0]==0x0301)
+           {
+             //printf("hzuo\n");
+             lcd_status=hzuo;
+           } 
+           if(real_data1[0]==0x0302)
+           {
+             //printf("hzhong\n");
+             lcd_status=hzhong;
+           } 
+           if(real_data1[0]==0x0303)
+           {
+             //printf("hyou\n");
+             lcd_status=hyou;
+           }
+
+           //左手窗口部件
+           if(real_data1[0]==0x031a)
+           {
+             printf("jieshouzbiaoding\n");
+             lcd_status=zbiaoding;
+           }
+           if(real_data1[0]==0x0310)
+           {
+             printf("jieshouzzuo\n");
+             lcd_status=zzuo;
+           } 
+           if(real_data1[0]==0x0312)
+           {
+             printf("jieshouzzhong\n");
+             lcd_status=zzhong;
+           } 
+           if(real_data1[0]==0x031b)
+           {
+             printf("jieshouzyou\n");
+             lcd_status=zyou;
+           }
+
+           //右手窗口部件
+           if(real_data1[0]==0x0320)
+           {
+             //printf("ybiaoding\n");
+             lcd_status=ybiaoding;
+           }
+           if(real_data1[0]==0x0321)
+           {
+             //printf("yzuo\n");
+             lcd_status=yzuo;
+           } 
+           if(real_data1[0]==0x0322)
+           {
+             //printf("yzhong\n");
+             lcd_status=yzhong;
+           } 
+           if(real_data1[0]==0x0323)
+           {
+             //printf("yyou\n");
+             lcd_status=yyou;
+           }
+
+           //LED灯板控制部件 
+           if(real_data1[0]==0x0330)
+           {
+             //printf("zui0\n");
+             lcd_status=zui0;
+           } 
+           if(real_data1[0]==0x0331)
+           {
+             //printf("zui1\n");
+             lcd_status=zui1;
+           } 
+           if(real_data1[0]==0x0332)
+           {
+             //printf("yan0\n");
+             lcd_status=yan0;
+           } 
+           if(real_data1[0]==0x0333)
+           {
+             //printf("yan1\n");
+             lcd_status=yan1;
+           }
+
+           //连续控制部件 
+           if(real_data1[0]==0x0334)
+           {
+             //printf("lianxu0\n");
+             lcd_status=alianxu0;
+           } 
+           if(real_data1[0]==0x0335)
+           {
+             //printf("lianxu1\n");
+             lcd_status=alianxu1;
+           }
+           real_data1[0]=0x0000;           
            continue;
         }
       }        
@@ -285,7 +492,7 @@ void *zhukongjieshou(void *fd1)//串口接收的桢解析(线程1)
 		   data_len=0;
 		   frame_len=0;
 		   j=0; i=0;
-           printf("lala\n");
+           //printf("lala\n");
            continue;
         }
       }        
@@ -311,8 +518,8 @@ int main(int argc, char **argv)
     pthread_t com2_id;
 
     
-    //fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
-    fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
+    fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
+    //fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
     if(fd1<0)
     { 
       printf("open port1 fail!\n");
@@ -374,6 +581,21 @@ int main(int argc, char **argv)
                 //send_data(fd1,0,0x81,0x80,27); //主控板数据请求         
                 if(version_window(fd1,fd2,real_data)<0) break;
                 delayms(100);
+              }
+           } 
+           if(lcd_status==Headctr_window)
+           {   
+              Lcd_control(fd2,"page head contrl"); 
+              motor_contrl_send(fd1,0x01,0x00,0,0);//初始化舵机
+              delayms(5);
+              motor_contrl_send(fd1,0x06,0x00,0,0);//初始化舵机
+              delayms(5);  
+              motor_contrl_send(fd1,0x07,0x00,0,0);//初始化舵机     
+              while (1) //循环读取数据
+              { 
+                //send_data(fd1,0,0x81,0x80,27); //主控板数据请求         
+                if(motor_ctrl_window(fd1,fd2,real_data)<0) break;
+                delayms(5);
               }
            } 
         delayms(100);
