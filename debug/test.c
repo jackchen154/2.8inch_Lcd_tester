@@ -374,25 +374,25 @@ void *lcdjieshou(void* fd2)
            }
 
            //LED灯板控制部件 
-           if(real_data1[0]==0x0330)
+           if(real_data1[0]==0x03aa)
            {
              //printf("zui0\n");
-             lcd_status=zui0;
+             lcd_status=led00;
            } 
-           if(real_data1[0]==0x0331)
+           if(real_data1[0]==0x03bb)
            {
              //printf("zui1\n");
-             lcd_status=zui1;
+             lcd_status=led01;
            } 
-           if(real_data1[0]==0x0332)
+           if(real_data1[0]==0x03cc)
            {
              //printf("yan0\n");
-             lcd_status=yan0;
+             lcd_status=led10;
            } 
-           if(real_data1[0]==0x0333)
+           if(real_data1[0]==0x03dd)
            {
              //printf("yan1\n");
-             lcd_status=yan1;
+             lcd_status=led11;
            }
 
            //连续控制部件 
@@ -518,8 +518,8 @@ int main(int argc, char **argv)
     pthread_t com2_id;
 
     
-    fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
-    //fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
+    //fd1 = UART_Open(fd1,"/dev/ttyS0"); //打开串口1，返回文件描述符
+    fd1 = UART_Open(fd1,"/dev/ttyUSB0"); //打开串口1，返回文件描述符
     if(fd1<0)
     { 
       printf("open port1 fail!\n");

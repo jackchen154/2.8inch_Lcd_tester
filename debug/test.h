@@ -8,8 +8,8 @@ enum window { main_window=2, Sensor_window, Control_window, Headctr_window, vers
               hbiaoding, hzuo, hyou, hzhong, 
               zbiaoding, zzuo, zyou, zzhong,
               ybiaoding, yzuo, yyou, yzhong,
-              zui0,zui1,
-              yan0,yan1,
+              led00,led01,
+              led10,led11,
               alianxu0,alianxu1};//窗口页面名称
 
 int send_data(int fd,uchar rw,uchar device_n,uchar reg_n,uchar reg_mun);
