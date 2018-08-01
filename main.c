@@ -15,8 +15,8 @@ uchar b=0;
 uchar data_buf[100]={0},start_recive=0,start_fram=0,frame_len=0,data_len=0;
 uchar data_buf1[20]={0},start_recive1=0,start_fram1=0,frame_len1=0,data_len1=0;
 
-unsigned short real_data[50]={0};
-unsigned short real_data1[1]={0};
+unsigned short real_data[50]={0};//主控板接收解析存放地
+unsigned short real_data1[1]={0};//LCD模块接收解析存放缓存(只解析一个寄存器内容)
 
 void Delay1ms()		//@11.0592MHz
 {
@@ -229,28 +229,76 @@ void led_contrl_send(uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar lian
 	
 }
 
+void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed)//主控板多写
+{
+      unsigned int crc;
+      uchar read_buf[20]={0xaa,0x55,0xcc};
+	  read_buf[3]=0x81;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x00;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x04;
+
+      read_buf[9]=0x08;
+
+      read_buf[10]=0x00;
+      read_buf[11]=run_mode;
+
+      read_buf[12]=left_speed;
+      read_buf[13]=right_speed;
+
+			read_buf[14]=0x05;
+      read_buf[15]=0x0a;
+
+			read_buf[16]=0x05;
+      read_buf[17]=0x0a;
+			
+			read_buf[18]=0x00;
+      read_buf[19]=0x00;
+			
+	  crc=get_crc2(&read_buf[3],15);
+	  read_buf[18]=crc&0xff;
+	  read_buf[19]=(crc>>8)&0xff;
+	  UART1_Send(read_buf,20);
+	
+}
 
 void Main(void)  
 {  
   UART1_Init();
   UART2_Init();
 
-  Lcd_control("page main");     
+  Lcd_control("page main"); 
+  //Lcd_control("page ultrasonic"); 	
   while(1)
   { 
           if(lcd_status==Sensor_window)
-          {   
-						  TH1 = 0xFD;		
-              TL1 = TH1;	//115200
+          {   						
+              Lcd_control("page ultrasonic");
 						
-              Lcd_control("page ultrasonic");     
+						  TH1 = 0xFD;		
+              TL1 = TH1;	//115200						
               while (1) 
   						{ 
                 if(ultrasonic_window(real_data)<0) break;
-                delayms(1000);
+                delayms(250);
               }
            }
-
+          if(lcd_status==Control_window)//机器人控制
+          {   						
+              Lcd_control("page robot control");
+						
+						  TH1 = 0xFD;		
+              TL1 = TH1;	//115200						
+              while (1) 
+  						{ 
+                if(robot_ctrl_window(real_data)<0) break;
+                delayms(250);
+              }
+           }
            if(lcd_status==versions_window)
            {   
 
@@ -258,27 +306,27 @@ void Main(void)
               while (1) 
               { 
                 if(version_window(real_data)<0) break;
-                delayms(1000);
+                delayms(250);
               }
            }
 					 
            if(lcd_status==Headctr_window)
            {   
+              Lcd_control("page head contrl");
               TH1 = 0xf7;	
-	            TL1 = TH1;	//38400波特率  
-              Lcd_control("page head contrl"); 
+	            TL1 = TH1;	//38400波特率 						 
               motor_contrl_send(0x01,0x00,0,0);//初始化舵机
-              delayms(5);
+              delayms(30);
               motor_contrl_send(0x06,0x00,0,0);//初始化舵机
-              delayms(5);  
+              delayms(30);  
               motor_contrl_send(0x07,0x00,0,0);//初始化舵机     
               while (1) //循环读取数据
               {         
                 if(motor_ctrl_window(real_data)<0) break;
-                delayms(5);
+                //delayms(5);
               }
-           } 					 
-        delayms(100);
+            } 					 
+        delayms(1);
         
    }//end while(1)
 }
@@ -359,7 +407,7 @@ void zhukongjieshou(void)	interrupt 4
   }
 }
 
-void lcdjieshou(void) interrupt 8//接收字符及处理
+void lcdjieshou(void) interrupt 8 using 1//接收字符及处理
 { 
 
  uchar i,j;
@@ -401,8 +449,8 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
         {
            start_recive1=0;           
            start_fram1=0;
-		   data_len1=0;
-		   frame_len1=0;
+		       data_len1=0;
+		       frame_len1=0;
         }
         frame_len1--;
         if(frame_len1==0)
@@ -416,12 +464,12 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
 	           real_data1[i]=data_buf1[6+j]<<8| data_buf1[7+j];//有效数据合为2个字节的数据（一个寄存器的数据值为2个字节） 
 	           j=j+2;
 	         }	         
-           }            
+         }            
            start_recive1=0;
            start_fram1=0;
-		   data_len1=0;
-		   frame_len1=0;
-		   j=0; i=0;
+		       data_len1=0;
+		       frame_len1=0;
+		       j=0; i=0;
      
            //页面窗口部件
            if(real_data1[0]==0x0000)
@@ -548,7 +596,40 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
              ////printf("lianxu1\n");
              lcd_status=alianxu1;
            }
-           real_data1[0]=0x0000;           
+           //real_data1[0]=0x0000;
+			     
+					 //自动充电部件
+					 if(real_data1[0]==0xc100)//关闭充电
+           {
+             lcd_status=auto_charge_off;
+           } 
+           if(real_data1[0]==0xc101)//开启充电
+           {
+             lcd_status=auto_charge_on;
+           }
+					 
+					 //机器人控制行走部分
+						if(real_data1[0]==0xd1d1)//上
+						{	
+             lcd_status=go_up;
+            } 
+           if(real_data1[0]==0xd2d2)//下
+           {
+             lcd_status=go_down;
+           }
+						if(real_data1[0]==0xd3d3)//左
+           {
+             lcd_status=go_left;
+           } 
+           if(real_data1[0]==0xd4d4)//右
+           {
+             lcd_status=go_right;
+           }
+           if(real_data1[0]==0xd0d0)//停
+           {
+             lcd_status=go_stop;
+           }						 
+					 return;
 
         }
       }        

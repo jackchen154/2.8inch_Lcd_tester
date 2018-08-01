@@ -48,9 +48,11 @@ void UART1_Init()
 void UART2_Init()
 {
   //AUXR1=0X10;//TXD2由P1.3转到P4.3口,RXD2由P1.2转到P4.2口
+	IPH2=0x01;
+	IP2=0x01;
   S2CON=0X50;//选择工作方式1，允许接收数据
-  //BRT = 0xf7;//38400
-	BRT = 0xdc;//9600
+  BRT = 0xf7;//38400
+	 //BRT = 0xdc;//9600
   //BRT = 0xFd;//115200
   EA = 1; //允许总中断	
   AUXR |= 0x14;//(1T模式),启动发生器工作,0X1c波特率加倍，如0x14为不加倍
