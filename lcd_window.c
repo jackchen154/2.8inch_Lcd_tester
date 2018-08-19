@@ -436,8 +436,8 @@ int robot_ctrl_window(unsigned short *real_data)//整机控制部分
        {
           case auto_charge_on : main_board_contrl_send(0x80,0,0);  break;
 					case auto_charge_off : main_board_contrl_send(0x00,0,0);  break;
-					case go_up : main_board_contrl_send(0x01,25,25);  break;
-					case go_down : main_board_contrl_send(0x02,25,25); break;
+					case go_up : main_board_contrl_send(0x01,40,40);  break;
+					case go_down : main_board_contrl_send(0x02,40,40); break;
 					case go_left : main_board_contrl_send(0x04,0,25); break;
 					case go_right : main_board_contrl_send(0x03,25,0); break;
 					case go_stop : main_board_contrl_send(0x05,0,0); //被动刹车

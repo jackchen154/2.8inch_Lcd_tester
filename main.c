@@ -323,7 +323,7 @@ void Main(void)
               while (1) //循环读取数据
               {         
                 if(motor_ctrl_window(real_data)<0) break;
-                //delayms(5);
+                delayms(10);
               }
             } 					 
         delayms(1);
