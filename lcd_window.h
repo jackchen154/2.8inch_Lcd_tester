@@ -12,5 +12,6 @@ int ultrasonic_window(unsigned short *real_data);//刷新传感器窗口
 int version_window(unsigned short *real_data);//刷新硬件版本窗口
 int motor_ctrl_window(unsigned short *real_data);//舵机控制窗口
 int robot_ctrl_window(unsigned short *real_data);//整机控制窗口
+int Duojixianzhi_window(unsigned short *real_data);//舵机限制控制窗口
 #endif
 

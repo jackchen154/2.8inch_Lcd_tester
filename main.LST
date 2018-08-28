@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 1   
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   53   1        if(len==0) len=1;
   54   1        while(len--)
   55   1        {
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 2   
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 2   
 
   56   2          crc ^=*ptr;
   57   2          for(i=0;i<8;i++)
@@ -126,7 +126,7 @@ line level    source
  115          unsigned short get_crc3(uchar *ptr,uchar len)
  116          {
  117   1        uchar i;
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 3   
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 3   
 
  118   1        unsigned short crc=0xFFFF;
  119   1        if(len==0) len=1;
@@ -190,7 +190,7 @@ line level    source
  177   1            read_buf[14]=weizhi>>8;
  178   1            read_buf[15]=weizhi&0x00ff;
  179   1      
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 4   
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 4   
 
  180   1            read_buf[16]=0x12;
  181   1            read_buf[17]=0x0c;
@@ -213,478 +213,561 @@ line level    source
  198   1        
  199   1      }
  200          
- 201          void led_contrl_send(uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar liangdu)//LED¿ØÖÆ
- 202          {
- 203   1            unsigned int crc;
- 204   1            uchar read_buf[17]={0xaa,0x55,0xcc};
- 205   1          read_buf[3]=device_n;
- 206   1          read_buf[4]=0x10;
- 207   1      
- 208   1          read_buf[5]=0x00;
- 209   1          read_buf[6]=0x00;
- 210   1      
- 211   1          read_buf[7]=0x00;
- 212   1          read_buf[8]=0x03;
- 213   1      
- 214   1            read_buf[9]=0x06;
- 215   1      
- 216   1            read_buf[10]=0x00;
- 217   1            read_buf[11]=led1_cycle;
- 218   1      
- 219   1            read_buf[12]=0x00;
- 220   1            read_buf[13]=led2_cycle;
- 221   1      
- 222   1            read_buf[14]=0x00;
- 223   1            read_buf[15]=liangdu;
- 224   1      
- 225   1          crc=get_crc2(&read_buf[3],13);
- 226   1          read_buf[16]=crc&0xff;
- 227   1          read_buf[17]=(crc>>8)&0xff;
- 228   1          UART1_Send(read_buf,18);
- 229   1        
- 230   1      }
- 231          
- 232          void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed)//Ö÷¿Ø°å¶àÐ´
+ 201          //ÏÞÎ»Öµ·¢ËÍ
+ 202          void limit_value_contrl_send(uchar device_n ,uchar limit_up_location,uchar limit_down_location)
+ 203          {
+ 204   1          unsigned int crc;
+ 205   1          uchar read_buf[30]={0xaa,0x55,0xcc};
+ 206   1          read_buf[3]=device_n;
+ 207   1          read_buf[4]=0x10;
+ 208   1      
+ 209   1          read_buf[5]=0x00;
+ 210   1          read_buf[6]=0x0b;
+ 211   1      
+ 212   1          read_buf[7]=0x00;
+ 213   1          read_buf[8]=0x02;
+ 214   1      
+ 215   1            read_buf[9]=0x04;
+ 216   1      
+ 217   1            read_buf[10]=0x00;
+ 218   1            read_buf[11]=limit_up_location;
+ 219   1      
+ 220   1            read_buf[12]=0x00;
+ 221   1            read_buf[13]=limit_down_location;
+ 222   1          
+ 223   1          crc=get_crc2(&read_buf[3],11);
+ 224   1          read_buf[14]=crc&0xff;
+ 225   1          read_buf[15]=(crc>>8)&0xff;
+ 226   1      
+ 227   1          UART1_Send(read_buf,16);
+ 228   1        
+ 229   1      }
+ 230          
+ 231          //ÏÞÖÆµçÁ÷·¢ËÍ
+ 232          void limit_current_contrl_send(uchar device_n ,uchar limit_current)
  233          {
- 234   1            unsigned int crc;
- 235   1            uchar read_buf[20]={0xaa,0x55,0xcc};
- 236   1          read_buf[3]=0x81;
+ 234   1          unsigned int crc;
+ 235   1          uchar read_buf[30]={0xaa,0x55,0xcc};
+ 236   1          read_buf[3]=device_n;
  237   1          read_buf[4]=0x10;
  238   1      
  239   1          read_buf[5]=0x00;
- 240   1          read_buf[6]=0x00;
+ 240   1          read_buf[6]=0x07;
  241   1      
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 5   
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 5   
 
  242   1          read_buf[7]=0x00;
- 243   1          read_buf[8]=0x04;
+ 243   1          read_buf[8]=0x01;
  244   1      
- 245   1            read_buf[9]=0x08;
+ 245   1            read_buf[9]=0x02;
  246   1      
  247   1            read_buf[10]=0x00;
- 248   1            read_buf[11]=run_mode;
+ 248   1            read_buf[11]=limit_current;
  249   1      
- 250   1            read_buf[12]=left_speed;
- 251   1            read_buf[13]=right_speed;
- 252   1      
- 253   1            read_buf[14]=0x05;
- 254   1            read_buf[15]=0x0a;
- 255   1      
- 256   1            read_buf[16]=0x05;
- 257   1            read_buf[17]=0x0a;
- 258   1            
- 259   1            read_buf[18]=0x00;
- 260   1            read_buf[19]=0x00;
- 261   1            
- 262   1          crc=get_crc2(&read_buf[3],15);
- 263   1          read_buf[18]=crc&0xff;
- 264   1          read_buf[19]=(crc>>8)&0xff;
- 265   1          UART1_Send(read_buf,20);
- 266   1        
- 267   1      }
- 268          
- 269          void Main(void)  
- 270          {  
- 271   1        UART1_Init();
- 272   1        UART2_Init();
+ 250   1          
+ 251   1          crc=get_crc2(&read_buf[3],9);
+ 252   1          read_buf[12]=crc&0xff;
+ 253   1          read_buf[13]=(crc>>8)&0xff;
+ 254   1      
+ 255   1          UART1_Send(read_buf,14);
+ 256   1        
+ 257   1      }
+ 258          
+ 259          void led_contrl_send(uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar liangdu)//LED¿ØÖÆ
+ 260          {
+ 261   1            unsigned int crc;
+ 262   1            uchar read_buf[17]={0xaa,0x55,0xcc};
+ 263   1          read_buf[3]=device_n;
+ 264   1          read_buf[4]=0x10;
+ 265   1      
+ 266   1          read_buf[5]=0x00;
+ 267   1          read_buf[6]=0x00;
+ 268   1      
+ 269   1          read_buf[7]=0x00;
+ 270   1          read_buf[8]=0x03;
+ 271   1      
+ 272   1            read_buf[9]=0x06;
  273   1      
- 274   1        Lcd_control("page main"); 
- 275   1        //Lcd_control("page ultrasonic");   
- 276   1        while(1)
- 277   1        { 
- 278   2                if(lcd_status==Sensor_window)
- 279   2                {               
- 280   3                    Lcd_control("page ultrasonic");
- 281   3                  
- 282   3                    TH1 = 0xFD;   
- 283   3                    TL1 = TH1;  //115200            
- 284   3                    while (1) 
- 285   3                    { 
- 286   4                      if(ultrasonic_window(real_data)<0) break;
- 287   4                      delayms(250);
- 288   4                    }
- 289   3                 }
- 290   2                if(lcd_status==Control_window)//»úÆ÷ÈË¿ØÖÆ
- 291   2                {               
- 292   3                    Lcd_control("page robot control");
- 293   3                  
- 294   3                    TH1 = 0xFD;   
- 295   3                    TL1 = TH1;  //115200            
- 296   3                    while (1) 
- 297   3                    { 
- 298   4                      if(robot_ctrl_window(real_data)<0) break;
- 299   4                      delayms(250);
- 300   4                    }
- 301   3                 }
- 302   2                 if(lcd_status==versions_window)
- 303   2                 {   
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 6   
+ 274   1            read_buf[10]=0x00;
+ 275   1            read_buf[11]=led1_cycle;
+ 276   1      
+ 277   1            read_buf[12]=0x00;
+ 278   1            read_buf[13]=led2_cycle;
+ 279   1      
+ 280   1            read_buf[14]=0x00;
+ 281   1            read_buf[15]=liangdu;
+ 282   1      
+ 283   1          crc=get_crc2(&read_buf[3],13);
+ 284   1          read_buf[16]=crc&0xff;
+ 285   1          read_buf[17]=(crc>>8)&0xff;
+ 286   1          UART1_Send(read_buf,18);
+ 287   1        
+ 288   1      }
+ 289          
+ 290          void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed)//Ö÷¿Ø°å¶àÐ´
+ 291          {
+ 292   1            unsigned int crc;
+ 293   1            uchar read_buf[20]={0xaa,0x55,0xcc};
+ 294   1          read_buf[3]=0x81;
+ 295   1          read_buf[4]=0x10;
+ 296   1      
+ 297   1          read_buf[5]=0x00;
+ 298   1          read_buf[6]=0x00;
+ 299   1      
+ 300   1          read_buf[7]=0x00;
+ 301   1          read_buf[8]=0x04;
+ 302   1      
+ 303   1            read_buf[9]=0x08;
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 6   
 
- 304   3      
- 305   3                    Lcd_control("page version");     
- 306   3                    while (1) 
- 307   3                    { 
- 308   4                      if(version_window(real_data)<0) break;
- 309   4                      delayms(250);
- 310   4                    }
- 311   3                 }
- 312   2                 
- 313   2                 if(lcd_status==Headctr_window)
- 314   2                 {   
- 315   3                    Lcd_control("page head contrl");
- 316   3                    TH1 = 0xf7; 
- 317   3                    TL1 = TH1;  //38400²¨ÌØÂÊ              
- 318   3                    motor_contrl_send(0x01,0x00,0,0);//³õÊ¼»¯¶æ»ú
- 319   3                    delayms(30);
- 320   3                    motor_contrl_send(0x06,0x00,0,0);//³õÊ¼»¯¶æ»ú
- 321   3                    delayms(30);  
- 322   3                    motor_contrl_send(0x07,0x00,0,0);//³õÊ¼»¯¶æ»ú     
- 323   3                    while (1) //Ñ­»·¶ÁÈ¡Êý¾Ý
- 324   3                    {         
- 325   4                      if(motor_ctrl_window(real_data)<0) break;
- 326   4                      delayms(10);
- 327   4                    }
- 328   3                  }            
- 329   2              delayms(1);
- 330   2              
- 331   2         }//end while(1)
- 332   1      }
- 333            
- 334          void zhukongjieshou(void) interrupt 4  
- 335          {
- 336   1        uchar i,j;
- 337   1        unsigned short crc_result,ck_crc;            
- 338   1        if(RI == 1)   //µ±Ó²¼þ½ÓÊÕµ½Ò»¸öÊý¾ÝÊ±£¬RI»áÖÃÎ»  
- 339   1        {
- 340   2          RI = 0; 
- 341   2          data_buf[data_len]=SBUF;
- 342   2          if(start_recive==0)
- 343   2          {
- 344   3            if(data_len==0&&data_buf[data_len]==0xaa)
- 345   3            {  
- 346   4              data_len=1; 
- 347   4            }      
- 348   3          else if(data_len==1&&data_buf[data_len]==0xaa)//ÈçÏÂ´Î´«À´µÄ»¹ÊÇÖ¡Í·ÔÙ´ÎÒÔaa¿ªÊ¼ÅÐ¶ÏÖ¡
- 349   3            {  
- 350   4             data_len=1;  
- 351   4            } 
- 352   3            else if(data_len==1&&data_buf[data_len]==0x55)
- 353   3            {
- 354   4              data_len=2;  
- 355   4            }    
- 356   3            else if(data_len==2&&data_buf[data_len]==0xcc)
- 357   3            {  
- 358   4             start_recive=1;
- 359   4            } 
- 360   3            else 
- 361   3            {
- 362   4             data_len=0;
- 363   4            }
- 364   3          }    
- 365   2          if(start_recive==1)
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 7   
+ 304   1      
+ 305   1            read_buf[10]=0x00;
+ 306   1            read_buf[11]=run_mode;
+ 307   1      
+ 308   1            read_buf[12]=left_speed;
+ 309   1            read_buf[13]=right_speed;
+ 310   1      
+ 311   1            read_buf[14]=0x05;
+ 312   1            read_buf[15]=0x0a;
+ 313   1      
+ 314   1            read_buf[16]=0x05;
+ 315   1            read_buf[17]=0x0a;
+ 316   1            
+ 317   1            read_buf[18]=0x00;
+ 318   1            read_buf[19]=0x00;
+ 319   1            
+ 320   1          crc=get_crc2(&read_buf[3],15);
+ 321   1          read_buf[18]=crc&0xff;
+ 322   1          read_buf[19]=(crc>>8)&0xff;
+ 323   1          UART1_Send(read_buf,20);
+ 324   1        
+ 325   1      }
+ 326          
+ 327          void Main(void)  
+ 328          {  
+ 329   1        UART1_Init();
+ 330   1        UART2_Init();
+ 331   1      
+ 332   1        Lcd_control("page main"); 
+ 333   1        //Lcd_control("page ultrasonic");   
+ 334   1        while(1)
+ 335   1        { 
+ 336   2                if(lcd_status==Sensor_window)
+ 337   2                {               
+ 338   3                    Lcd_control("page ultrasonic");
+ 339   3                  
+ 340   3                    TH1 = 0xFD;   
+ 341   3                    TL1 = TH1;  //115200            
+ 342   3                    while (1) 
+ 343   3                    { 
+ 344   4                      if(ultrasonic_window(real_data)<0) break;
+ 345   4                      delayms(250);
+ 346   4                    }
+ 347   3                 }
+ 348   2                if(lcd_status==Control_window)//»úÆ÷ÈË¿ØÖÆ
+ 349   2                {               
+ 350   3                    Lcd_control("page robot control");
+ 351   3                  
+ 352   3                    TH1 = 0xFD;   
+ 353   3                    TL1 = TH1;  //115200            
+ 354   3                    while (1) 
+ 355   3                    { 
+ 356   4                      if(robot_ctrl_window(real_data)<0) break;
+ 357   4                      delayms(250);
+ 358   4                    }
+ 359   3                 }
+ 360   2                 if(lcd_status==versions_window)
+ 361   2                 {   
+ 362   3      
+ 363   3                    Lcd_control("page version");     
+ 364   3                    while (1) 
+ 365   3                    { 
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 7   
 
- 366   2          {
- 367   3            if(start_fram==1)//½ÓÊÕ³¤¶ÈÏÞÖÆ
- 368   3            {
- 369   4              if(frame_len>=70)
- 370   4              {
- 371   5                 start_recive=0;           
- 372   5                 start_fram=0;
- 373   5             data_len=0;
- 374   5             frame_len=0;
- 375   5                 return;
- 376   5              }
- 377   4              frame_len--;
- 378   4              if(frame_len==0)
- 379   4              {
- 380   5                 crc_result = get_crc(&data_buf[3],data_buf[5]+3);//Êý¾ÝÖ¡¼ÆËãCRC
- 381   5                 ck_crc = data_buf[ (data_buf[5]+7)]<<8 | data_buf[ (data_buf[5]+6) ];//µÍ¸ß×Ö½ÚCRC×ª»»ÎªÕûÊý
- 382   5               if(crc_result==ck_crc)//CRCÐ£Ñé±È¶Ô
- 383   5               {  
- 384   6                 for(i=0;i<(data_buf[5]/2);i++)//¼ÆËãÊý¾Ý¶Ô¸öÊý
- 385   6                 {
- 386   7                   real_data[i]=data_buf[6+j]<<8| data_buf[7+j];//ÓÐÐ§Êý¾ÝºÏÎª2¸ö×Ö½ÚµÄÊý¾Ý£¨Ò»¸ö¼Ä´æÆ÷µÄÊý¾ÝÖµÎª
+ 366   4                      if(version_window(real_data)<0) break;
+ 367   4                      delayms(250);
+ 368   4                    }
+ 369   3                 }
+ 370   2                 
+ 371   2                 if(lcd_status==Headctr_window)
+ 372   2                 {   
+ 373   3                    Lcd_control("page head contrl");
+ 374   3                    TH1 = 0xf7; 
+ 375   3                    TL1 = TH1;  //38400²¨ÌØÂÊ              
+ 376   3                    motor_contrl_send(0x01,0x00,0,0);//³õÊ¼»¯¶æ»ú
+ 377   3                    delayms(30);
+ 378   3                    motor_contrl_send(0x06,0x00,0,0);//³õÊ¼»¯¶æ»ú
+ 379   3                    delayms(30);  
+ 380   3                    motor_contrl_send(0x07,0x00,0,0);//³õÊ¼»¯¶æ»ú     
+ 381   3                    while (1) //Ñ­»·¶ÁÈ¡Êý¾Ý
+ 382   3                    {         
+ 383   4                      if(motor_ctrl_window(real_data)<0) break;
+ 384   4                      delayms(10);
+ 385   4                    }
+ 386   3                  } 
+ 387   2                 
+ 388   2                 if(lcd_status==duojixianzhi_window)
+ 389   2                 {   
+ 390   3                    Lcd_control("page duojixianzhi");
+ 391   3                    TH1 = 0xf7; 
+ 392   3                    TL1 = TH1;  //38400²¨ÌØÂÊ                  
+ 393   3                    while (1) //Ñ­»·¶ÁÈ¡Êý¾Ý
+ 394   3                    {         
+ 395   4                      if(Duojixianzhi_window(real_data)<0) break;
+ 396   4                    }
+ 397   3                  }          
+ 398   2              delayms(1);
+ 399   2              
+ 400   2         }//end while(1)
+ 401   1      }
+ 402            
+ 403          void zhukongjieshou(void) interrupt 4  
+ 404          {
+ 405   1        uchar i,j;
+ 406   1        unsigned short crc_result,ck_crc;            
+ 407   1        if(RI == 1)   //µ±Ó²¼þ½ÓÊÕµ½Ò»¸öÊý¾ÝÊ±£¬RI»áÖÃÎ»  
+ 408   1        {
+ 409   2          RI = 0; 
+ 410   2          data_buf[data_len]=SBUF;
+ 411   2          if(start_recive==0)
+ 412   2          {
+ 413   3            if(data_len==0&&data_buf[data_len]==0xaa)
+ 414   3            {  
+ 415   4              data_len=1; 
+ 416   4            }      
+ 417   3          else if(data_len==1&&data_buf[data_len]==0xaa)//ÈçÏÂ´Î´«À´µÄ»¹ÊÇÖ¡Í·ÔÙ´ÎÒÔaa¿ªÊ¼ÅÐ¶ÏÖ¡
+ 418   3            {  
+ 419   4             data_len=1;  
+ 420   4            } 
+ 421   3            else if(data_len==1&&data_buf[data_len]==0x55)
+ 422   3            {
+ 423   4              data_len=2;  
+ 424   4            }    
+ 425   3            else if(data_len==2&&data_buf[data_len]==0xcc)
+ 426   3            {  
+ 427   4             start_recive=1;
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 8   
+
+ 428   4            } 
+ 429   3            else 
+ 430   3            {
+ 431   4             data_len=0;
+ 432   4            }
+ 433   3          }    
+ 434   2          if(start_recive==1)
+ 435   2          {
+ 436   3            if(start_fram==1)//½ÓÊÕ³¤¶ÈÏÞÖÆ
+ 437   3            {
+ 438   4              if(frame_len>=70)
+ 439   4              {
+ 440   5                 start_recive=0;           
+ 441   5                 start_fram=0;
+ 442   5             data_len=0;
+ 443   5             frame_len=0;
+ 444   5                 return;
+ 445   5              }
+ 446   4              frame_len--;
+ 447   4              if(frame_len==0)
+ 448   4              {
+ 449   5                 crc_result = get_crc(&data_buf[3],data_buf[5]+3);//Êý¾ÝÖ¡¼ÆËãCRC
+ 450   5                 ck_crc = data_buf[ (data_buf[5]+7)]<<8 | data_buf[ (data_buf[5]+6) ];//µÍ¸ß×Ö½ÚCRC×ª»»ÎªÕûÊý
+ 451   5               if(crc_result==ck_crc)//CRCÐ£Ñé±È¶Ô
+ 452   5               {  
+ 453   6                 for(i=0;i<(data_buf[5]/2);i++)//¼ÆËãÊý¾Ý¶Ô¸öÊý
+ 454   6                 {
+ 455   7                   real_data[i]=data_buf[6+j]<<8| data_buf[7+j];//ÓÐÐ§Êý¾ÝºÏÎª2¸ö×Ö½ÚµÄÊý¾Ý£¨Ò»¸ö¼Ä´æÆ÷µÄÊý¾ÝÖµÎª
              -2¸ö×Ö½Ú£© 
- 387   7                   j=j+2;
- 388   7                 }           
- 389   6               }
- 390   5               if(real_data[0]==0x1122 && real_data[1]==0x3344)
- 391   5               reboot();
- 392   5               start_recive=0;
- 393   5               start_fram=0;
- 394   5               data_len=0;
- 395   5               frame_len=0;
- 396   5               j=0; i=0;
- 397   5               return;
- 398   5              }
- 399   4            }        
- 400   3            if(data_len==5)
- 401   3            {
- 402   4              start_fram=1;
- 403   4              frame_len=data_buf[5]+2;
- 404   4            }
- 405   3            data_len++;
- 406   3          }
- 407   2        }
- 408   1      }
- 409          
- 410          void lcdjieshou(void) interrupt 8 using 1//½ÓÊÕ×Ö·û¼°´¦Àí
- 411          { 
- 412   1      
- 413   1       uchar i,j;
- 414   1       unsigned short crc_result,ck_crc;
- 415   1      
- 416   1      if(S2CON&S2RI)//ÓÐÊý¾Ý´«À´£¬Ó²¼þÖÃÎ»S2RI
- 417   1      {
- 418   2       S2CON&=~S2RI;  //Çå³ýÖÃÎ»£¬ÒÔ±ãÏÂÒ»Êý¾Ý´«À´     
- 419   2         data_buf1[data_len1]=S2BUF; 
- 420   2           if(start_recive1==0)
- 421   2           {
- 422   3             if(data_len1==0&&data_buf1[data_len1]==0xaa)
- 423   3             {  
- 424   4               data_len1=1;         
- 425   4             }      
- 426   3           else if(data_len1==1&&data_buf1[data_len1]==0xaa)//ÈçÏÂ´Î´«À´µÄ»¹ÊÇÖ¡Í·ÔÙ´ÎÒÔaa¿ªÊ¼ÅÐ¶ÏÖ¡
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 8   
+ 456   7                   j=j+2;
+ 457   7                 }           
+ 458   6               }
+ 459   5               if(real_data[0]==0x1122 && real_data[1]==0x3344)
+ 460   5               reboot();
+ 461   5               start_recive=0;
+ 462   5               start_fram=0;
+ 463   5               data_len=0;
+ 464   5               frame_len=0;
+ 465   5               j=0; i=0;
+ 466   5               return;
+ 467   5              }
+ 468   4            }        
+ 469   3            if(data_len==5)
+ 470   3            {
+ 471   4              start_fram=1;
+ 472   4              frame_len=data_buf[5]+2;
+ 473   4            }
+ 474   3            data_len++;
+ 475   3          }
+ 476   2        }
+ 477   1      }
+ 478          
+ 479          void lcdjieshou(void) interrupt 8 using 1//½ÓÊÕ×Ö·û¼°´¦Àí
+ 480          { 
+ 481   1      
+ 482   1       uchar i,j;
+ 483   1       unsigned short crc_result,ck_crc;
+ 484   1      
+ 485   1      if(S2CON&S2RI)//ÓÐÊý¾Ý´«À´£¬Ó²¼þÖÃÎ»S2RI
+ 486   1      {
+ 487   2       S2CON&=~S2RI;  //Çå³ýÖÃÎ»£¬ÒÔ±ãÏÂÒ»Êý¾Ý´«À´     
+ 488   2         data_buf1[data_len1]=S2BUF; 
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 9   
 
- 427   3             {  
- 428   4              data_len1=1;  
- 429   4             } 
- 430   3             else if(data_len1==1&&data_buf1[data_len1]==0x55)
- 431   3             {
- 432   4               data_len1=2;           
- 433   4             }    
- 434   3             else if(data_len1==2&&data_buf1[data_len1]==0xcc)
- 435   3             {  
- 436   4              start_recive1=1;        
- 437   4             }  
- 438   3             else 
- 439   3             {
- 440   4              data_len1=0;
- 441   4             }
- 442   3           }    
- 443   2           if(start_recive1==1)
- 444   2           {
- 445   3              
- 446   3             if(start_fram1==1)//½ÓÊÕ³¤¶ÈÏÞÖÆ
- 447   3             {
- 448   4              if(frame_len1>=70)
- 449   4              {
- 450   5                 start_recive1=0;           
- 451   5                 start_fram1=0;
- 452   5                 data_len1=0;
- 453   5                 frame_len1=0;
- 454   5              }
- 455   4              frame_len1--;
- 456   4              if(frame_len1==0)
- 457   4              {
- 458   5                 crc_result = get_crc3(&data_buf1[3],data_buf1[5]+3);//Êý¾ÝÖ¡¼ÆËãCRC
- 459   5                 ck_crc = data_buf1[ (data_buf1[5]+7)]<<8 | data_buf1[ (data_buf1[5]+6) ];//µÍ¸ß×Ö½ÚCRC×ª»»ÎªÕû”
+ 489   2           if(start_recive1==0)
+ 490   2           {
+ 491   3             if(data_len1==0&&data_buf1[data_len1]==0xaa)
+ 492   3             {  
+ 493   4               data_len1=1;         
+ 494   4             }      
+ 495   3           else if(data_len1==1&&data_buf1[data_len1]==0xaa)//ÈçÏÂ´Î´«À´µÄ»¹ÊÇÖ¡Í·ÔÙ´ÎÒÔaa¿ªÊ¼ÅÐ¶ÏÖ¡
+ 496   3             {  
+ 497   4              data_len1=1;  
+ 498   4             } 
+ 499   3             else if(data_len1==1&&data_buf1[data_len1]==0x55)
+ 500   3             {
+ 501   4               data_len1=2;           
+ 502   4             }    
+ 503   3             else if(data_len1==2&&data_buf1[data_len1]==0xcc)
+ 504   3             {  
+ 505   4              start_recive1=1;        
+ 506   4             }  
+ 507   3             else 
+ 508   3             {
+ 509   4              data_len1=0;
+ 510   4             }
+ 511   3           }    
+ 512   2           if(start_recive1==1)
+ 513   2           {
+ 514   3              
+ 515   3             if(start_fram1==1)//½ÓÊÕ³¤¶ÈÏÞÖÆ
+ 516   3             {
+ 517   4              if(frame_len1>=70)
+ 518   4              {
+ 519   5                 start_recive1=0;           
+ 520   5                 start_fram1=0;
+ 521   5                 data_len1=0;
+ 522   5                 frame_len1=0;
+ 523   5              }
+ 524   4              frame_len1--;
+ 525   4              if(frame_len1==0)
+ 526   4              {
+ 527   5                 crc_result = get_crc3(&data_buf1[3],data_buf1[5]+3);//Êý¾ÝÖ¡¼ÆËãCRC
+ 528   5                 ck_crc = data_buf1[ (data_buf1[5]+7)]<<8 | data_buf1[ (data_buf1[5]+6) ];//µÍ¸ß×Ö½ÚCRC×ª»»ÎªÕû”
              -¼
- 460   5               if(crc_result==ck_crc)//CRCÐ£Ñé±È¶Ô
- 461   5               {  
- 462   6                 for(i=0;i<(data_buf1[5]/2);i++)//¼ÆËãÊý¾Ý¶Ô¸ö”¼
- 463   6                 {
- 464   7                   real_data1[i]=data_buf1[6+j]<<8| data_buf1[7+j];//ÓÐÐ§Êý¾ÝºÏÎª2¸ö×Ö½ÚµÄÊý¾Ý£¨Ò»¸ö¼Ä´æÆ÷µÄÊý¾ÝÖ
+ 529   5               if(crc_result==ck_crc)//CRCÐ£Ñé±È¶Ô
+ 530   5               {  
+ 531   6                 for(i=0;i<(data_buf1[5]/2);i++)//¼ÆËãÊý¾Ý¶Ô¸ö”¼
+ 532   6                 {
+ 533   7                   real_data1[i]=data_buf1[6+j]<<8| data_buf1[7+j];//ÓÐÐ§Êý¾ÝºÏÎª2¸ö×Ö½ÚµÄÊý¾Ý£¨Ò»¸ö¼Ä´æÆ÷µÄÊý¾ÝÖ
              -µÎª2¸ö×Ö½Ú£© 
- 465   7                   j=j+2;
- 466   7                 }           
- 467   6               }            
- 468   5                 start_recive1=0;
- 469   5                 start_fram1=0;
- 470   5                 data_len1=0;
- 471   5                 frame_len1=0;
- 472   5                 j=0; i=0;
- 473   5           
- 474   5                 //Ò³Ãæ´°¿Ú²¿¼þ
- 475   5                 if(real_data1[0]==0x0000)
- 476   5                 {
- 477   6                   ////printf("Control_window\n");
- 478   6                   lcd_status=Control_window;
- 479   6                 }
- 480   5                 if(real_data1[0]==0x0001)
- 481   5                 {
- 482   6                   ////printf("Sensor_window\n");
- 483   6                   lcd_status=Sensor_window;
- 484   6                 }
- 485   5                 if(real_data1[0]==0x0002)
- 486   5                 {
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 9   
+ 534   7                   j=j+2;
+ 535   7                 }           
+ 536   6               }            
+ 537   5                 start_recive1=0;
+ 538   5                 start_fram1=0;
+ 539   5                 data_len1=0;
+ 540   5                 frame_len1=0;
+ 541   5                 j=0; i=0;
+ 542   5           
+ 543   5                 //Ò³Ãæ´°¿Ú²¿¼þ
+ 544   5                 if(real_data1[0]==0x0000)
+ 545   5                 {
+ 546   6                   ////printf("Control_window\n");
+ 547   6                   lcd_status=Control_window;
+ 548   6                 }
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 10  
 
- 487   6                   ////printf("Headctr_window\n");
- 488   6                   lcd_status=Headctr_window;
- 489   6                 }
- 490   5                 if(real_data1[0]==0x0003)
- 491   5                 {
- 492   6                   ////printf("versions_window\n");
- 493   6                   lcd_status=versions_window;
- 494   6                 } 
- 495   5                 if(real_data1[0]==0x00bc)
- 496   5                 {
- 497   6                   ////printf("back button\n");
- 498   6                   lcd_status=Return_button;
- 499   6                 }
- 500   5                 //Í·²¿´°¿Ú²¿¼þ
- 501   5                 if(real_data1[0]==0x0300)
- 502   5                 {
- 503   6                   ////printf("hbiaoding\n");
- 504   6                   lcd_status=hbiaoding;
- 505   6                 }
- 506   5                 if(real_data1[0]==0x0301)
- 507   5                 {
- 508   6                   ////printf("hzuo\n");
- 509   6                   lcd_status=hzuo;
- 510   6                 } 
- 511   5                 if(real_data1[0]==0x0302)
- 512   5                 {
- 513   6                   ////printf("hzhong\n");
- 514   6                   lcd_status=hzhong;
- 515   6                 } 
- 516   5                 if(real_data1[0]==0x0303)
- 517   5                 {
- 518   6                   ////printf("hyou\n");
- 519   6                   lcd_status=hyou;
- 520   6                 }
- 521   5      
- 522   5                 //×óÊÖ´°¿Ú²¿¼þ
- 523   5                 if(real_data1[0]==0x031a)
- 524   5                 {
- 525   6                   ////printf("jieshouzbiaoding\n");
- 526   6                   lcd_status=zbiaoding;
- 527   6                 }
- 528   5                 if(real_data1[0]==0x0310)
- 529   5                 {
- 530   6                   ////printf("jieshouzzuo\n");
- 531   6                   lcd_status=zzuo;
- 532   6                 } 
- 533   5                 if(real_data1[0]==0x0312)
- 534   5                 {
- 535   6                   ////printf("jieshouzzhong\n");
- 536   6                   lcd_status=zzhong;
- 537   6                 } 
- 538   5                 if(real_data1[0]==0x031b)
- 539   5                 {
- 540   6                   ////printf("jieshouzyou\n");
- 541   6                   lcd_status=zyou;
- 542   6                 }
- 543   5      
- 544   5                 //ÓÒÊÖ´°¿Ú²¿¼þ
- 545   5                 if(real_data1[0]==0x0320)
- 546   5                 {
- 547   6                   ////printf("ybiaoding\n");
- 548   6                   lcd_status=ybiaoding;
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 10  
-
- 549   6                 }
- 550   5                 if(real_data1[0]==0x0321)
- 551   5                 {
- 552   6                   ////printf("yzuo\n");
- 553   6                   lcd_status=yzuo;
- 554   6                 } 
- 555   5                 if(real_data1[0]==0x0322)
- 556   5                 {
- 557   6                   ////printf("yzhong\n");
- 558   6                   lcd_status=yzhong;
- 559   6                 } 
- 560   5                 if(real_data1[0]==0x0323)
- 561   5                 {
- 562   6                   ////printf("yyou\n");
- 563   6                   lcd_status=yyou;
- 564   6                 }
- 565   5      
- 566   5                 //LEDµÆ°å¿ØÖÆ²¿¼þ 
- 567   5                 if(real_data1[0]==0x03aa)
- 568   5                 {
- 569   6                   ////printf("zui0\n");
- 570   6                   lcd_status=led00;
- 571   6                 } 
- 572   5                 if(real_data1[0]==0x03bb)
- 573   5                 {
- 574   6                   ////printf("zui1\n");
- 575   6                   lcd_status=led01;
- 576   6                 } 
- 577   5                 if(real_data1[0]==0x03cc)
- 578   5                 {
- 579   6                   ////printf("yan0\n");
- 580   6                   lcd_status=led10;
- 581   6                 } 
- 582   5                 if(real_data1[0]==0x03dd)
- 583   5                 {
- 584   6                   ////printf("yan1\n");
- 585   6                   lcd_status=led11;
- 586   6                 }
- 587   5      
- 588   5                 //Á¬Ðø¿ØÖÆ²¿¼þ 
- 589   5                 if(real_data1[0]==0x0334)
- 590   5                 {
- 591   6                   ////printf("lianxu0\n");
- 592   6                   lcd_status=alianxu0;
- 593   6                 } 
- 594   5                 if(real_data1[0]==0x0335)
- 595   5                 {
- 596   6                   ////printf("lianxu1\n");
- 597   6                   lcd_status=alianxu1;
- 598   6                 }
- 599   5                 //real_data1[0]=0x0000;
- 600   5                 
- 601   5                 //×Ô¶¯³äµç²¿¼þ
- 602   5                 if(real_data1[0]==0xc100)//¹Ø±Õ³äµç
+ 549   5                 if(real_data1[0]==0x0001)
+ 550   5                 {
+ 551   6                   ////printf("Sensor_window\n");
+ 552   6                   lcd_status=Sensor_window;
+ 553   6                 }
+ 554   5                 if(real_data1[0]==0x0002)
+ 555   5                 {
+ 556   6                   ////printf("Headctr_window\n");
+ 557   6                   lcd_status=Headctr_window;
+ 558   6                 }
+ 559   5                 if(real_data1[0]==0x0003)
+ 560   5                 {
+ 561   6                   ////printf("versions_window\n");
+ 562   6                   lcd_status=versions_window;
+ 563   6                 }
+ 564   5                 if(real_data1[0]==0x0004)
+ 565   5                 {
+ 566   6                   ////printf("versions_window\n");
+ 567   6                   lcd_status=duojixianzhi_window;
+ 568   6                 }           
+ 569   5                 if(real_data1[0]==0x00bc)
+ 570   5                 {
+ 571   6                   ////printf("back button\n");
+ 572   6                   lcd_status=Return_button;
+ 573   6                 }
+ 574   5                 //Í·²¿´°¿Ú²¿¼þ
+ 575   5                 if(real_data1[0]==0x0300)
+ 576   5                 {
+ 577   6                   ////printf("hbiaoding\n");
+ 578   6                   lcd_status=hbiaoding;
+ 579   6                 }
+ 580   5                 if(real_data1[0]==0x0301)
+ 581   5                 {
+ 582   6                   ////printf("hzuo\n");
+ 583   6                   lcd_status=hzuo;
+ 584   6                 } 
+ 585   5                 if(real_data1[0]==0x0302)
+ 586   5                 {
+ 587   6                   ////printf("hzhong\n");
+ 588   6                   lcd_status=hzhong;
+ 589   6                 } 
+ 590   5                 if(real_data1[0]==0x0303)
+ 591   5                 {
+ 592   6                   ////printf("hyou\n");
+ 593   6                   lcd_status=hyou;
+ 594   6                 }
+ 595   5      
+ 596   5                 //×óÊÖ´°¿Ú²¿¼þ
+ 597   5                 if(real_data1[0]==0x031a)
+ 598   5                 {
+ 599   6                   ////printf("jieshouzbiaoding\n");
+ 600   6                   lcd_status=zbiaoding;
+ 601   6                 }
+ 602   5                 if(real_data1[0]==0x0310)
  603   5                 {
- 604   6                   lcd_status=auto_charge_off;
- 605   6                 } 
- 606   5                 if(real_data1[0]==0xc101)//¿ªÆô³äµç
- 607   5                 {
- 608   6                   lcd_status=auto_charge_on;
- 609   6                 }
- 610   5                 
-C51 COMPILER V9.00   MAIN                                                                  08/02/2018 14:50:11 PAGE 11  
+ 604   6                   ////printf("jieshouzzuo\n");
+ 605   6                   lcd_status=zzuo;
+ 606   6                 } 
+ 607   5                 if(real_data1[0]==0x0312)
+ 608   5                 {
+ 609   6                   ////printf("jieshouzzhong\n");
+ 610   6                   lcd_status=zzhong;
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 11  
 
- 611   5                 //»úÆ÷ÈË¿ØÖÆÐÐ×ß²¿·Ö
- 612   5                  if(real_data1[0]==0xd1d1)//ÉÏ
- 613   5                  { 
- 614   6                   lcd_status=go_up;
- 615   6                  } 
- 616   5                 if(real_data1[0]==0xd2d2)//ÏÂ
- 617   5                 {
- 618   6                   lcd_status=go_down;
- 619   6                 }
- 620   5                  if(real_data1[0]==0xd3d3)//×ó
- 621   5                 {
- 622   6                   lcd_status=go_left;
- 623   6                 } 
- 624   5                 if(real_data1[0]==0xd4d4)//ÓÒ
+ 611   6                 } 
+ 612   5                 if(real_data1[0]==0x031b)
+ 613   5                 {
+ 614   6                   ////printf("jieshouzyou\n");
+ 615   6                   lcd_status=zyou;
+ 616   6                 }
+ 617   5      
+ 618   5                 //ÓÒÊÖ´°¿Ú²¿¼þ
+ 619   5                 if(real_data1[0]==0x0320)
+ 620   5                 {
+ 621   6                   ////printf("ybiaoding\n");
+ 622   6                   lcd_status=ybiaoding;
+ 623   6                 }
+ 624   5                 if(real_data1[0]==0x0321)
  625   5                 {
- 626   6                   lcd_status=go_right;
- 627   6                 }
- 628   5                 if(real_data1[0]==0xd0d0)//Í£
- 629   5                 {
- 630   6                   lcd_status=go_stop;
- 631   6                 }             
- 632   5                 return;
- 633   5      
- 634   5              }
- 635   4            }        
- 636   3            if(data_len1==5)
- 637   3            {
- 638   4              start_fram1=1;
- 639   4              frame_len1=data_buf1[5]+2;
- 640   4            }
- 641   3            data_len1++;
- 642   3          }
- 643   2         
- 644   2       }
- 645   1      }
+ 626   6                   ////printf("yzuo\n");
+ 627   6                   lcd_status=yzuo;
+ 628   6                 } 
+ 629   5                 if(real_data1[0]==0x0322)
+ 630   5                 {
+ 631   6                   ////printf("yzhong\n");
+ 632   6                   lcd_status=yzhong;
+ 633   6                 } 
+ 634   5                 if(real_data1[0]==0x0323)
+ 635   5                 {
+ 636   6                   ////printf("yyou\n");
+ 637   6                   lcd_status=yyou;
+ 638   6                 }
+ 639   5      
+ 640   5                 //LEDµÆ°å¿ØÖÆ²¿¼þ 
+ 641   5                 if(real_data1[0]==0x03aa)
+ 642   5                 {
+ 643   6                   ////printf("zui0\n");
+ 644   6                   lcd_status=led00;
+ 645   6                 } 
+ 646   5                 if(real_data1[0]==0x03bb)
+ 647   5                 {
+ 648   6                   ////printf("zui1\n");
+ 649   6                   lcd_status=led01;
+ 650   6                 } 
+ 651   5                 if(real_data1[0]==0x03cc)
+ 652   5                 {
+ 653   6                   ////printf("yan0\n");
+ 654   6                   lcd_status=led10;
+ 655   6                 } 
+ 656   5                 if(real_data1[0]==0x03dd)
+ 657   5                 {
+ 658   6                   ////printf("yan1\n");
+ 659   6                   lcd_status=led11;
+ 660   6                 }
+ 661   5      
+ 662   5                 //Á¬Ðø¿ØÖÆ²¿¼þ 
+ 663   5                 if(real_data1[0]==0x0334)
+ 664   5                 {
+ 665   6                   ////printf("lianxu0\n");
+ 666   6                   lcd_status=alianxu0;
+ 667   6                 } 
+ 668   5                 if(real_data1[0]==0x0335)
+ 669   5                 {
+ 670   6                   ////printf("lianxu1\n");
+ 671   6                   lcd_status=alianxu1;
+ 672   6                 }
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 12  
+
+ 673   5                 //real_data1[0]=0x0000;
+ 674   5                 
+ 675   5                 //×Ô¶¯³äµç²¿¼þ
+ 676   5                 if(real_data1[0]==0xc100)//¹Ø±Õ³äµç
+ 677   5                 {
+ 678   6                   lcd_status=auto_charge_off;
+ 679   6                 } 
+ 680   5                 if(real_data1[0]==0xc101)//¿ªÆô³äµç
+ 681   5                 {
+ 682   6                   lcd_status=auto_charge_on;
+ 683   6                 }
+ 684   5                 
+ 685   5                 //»úÆ÷ÈË¿ØÖÆÐÐ×ß²¿·Ö
+ 686   5                  if(real_data1[0]==0xd1d1)//ÉÏ
+ 687   5                  { 
+ 688   6                   lcd_status=go_up;
+ 689   6                  } 
+ 690   5                 if(real_data1[0]==0xd2d2)//ÏÂ
+ 691   5                 {
+ 692   6                   lcd_status=go_down;
+ 693   6                 }
+ 694   5                  if(real_data1[0]==0xd3d3)//×ó
+ 695   5                 {
+ 696   6                   lcd_status=go_left;
+ 697   6                 } 
+ 698   5                 if(real_data1[0]==0xd4d4)//ÓÒ
+ 699   5                 {
+ 700   6                   lcd_status=go_right;
+ 701   6                 }
+ 702   5                 if(real_data1[0]==0xd0d0)//Í£
+ 703   5                 {
+ 704   6                   lcd_status=go_stop;
+ 705   6                 }
+ 706   5                 //ÏÞÎ»ÉèÖÃ¿Ø¼þ
+ 707   5                 if(real_data1[0]==0x0401)//Í£
+ 708   5                 {
+ 709   6                   lcd_status=set_limit_value;
+ 710   6                 }
+ 711   5                 return;
+ 712   5      
+ 713   5              }
+ 714   4            }        
+ 715   3            if(data_len1==5)
+ 716   3            {
+ 717   4              start_fram1=1;
+ 718   4              frame_len1=data_buf1[5]+2;
+ 719   4            }
+ 720   3            data_len1++;
+ 721   3          }
+ 722   2         
+ 723   2       }
+ 724   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   2530    ----
-   CONSTANT SIZE    =    153    ----
-   XDATA SIZE       =    237     110
+   CODE SIZE        =   2801    ----
+   CONSTANT SIZE    =    231    ----
+   XDATA SIZE       =    237     175
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
+C51 COMPILER V9.00   MAIN                                                                  08/28/2018 10:44:03 PAGE 13  
+
 END OF MODULE INFORMATION.
 
 

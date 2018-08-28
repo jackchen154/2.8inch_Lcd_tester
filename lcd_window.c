@@ -428,6 +428,107 @@ int motor_ctrl_window(unsigned short *real_data)//舵机控制窗口
    return 0;//正常刷新数据
 }
 
+int Duojixianzhi_window(unsigned short *real_data)//舵机限制窗口
+{                
+      //头部限制查询
+    	send_data(0x01,0x80,1);//读限定电流值
+      delayms(30);
+      Lcd_set_val("htouxianliu.val=", *(real_data));
+      delayms(30);
+	    *(real_data)=0;
+	
+	    send_data(0x01,0x0B,2);//读限位值
+	    delayms(30);
+      Lcd_set_val("htoushangxw.val=", (int)(*(real_data)));
+	    delayms(30);
+      Lcd_set_val("htouxiaxw.val=", (int)(*(real_data+1)));
+      *(real_data)=0;
+      *(real_data+1)=0;
+
+      //俯仰限制查询
+    	send_data(0x02,0x80,1);//读限定电流值
+      delayms(30);
+      Lcd_set_val("fyxianliu.val=", *(real_data));
+      delayms(30);
+	    *(real_data)=0;
+	
+	    send_data(0x02,0x0B,2);//读限位值
+	    delayms(30);
+      Lcd_set_val("fyshangxianw.val=", (int)(*(real_data)));
+	    delayms(30);
+      Lcd_set_val("fyxiaxianw.val=", (int)(*(real_data+1)));
+      *(real_data)=0;
+      *(real_data+1)=0;
+
+      //左手限制查询
+    	send_data(0x06,0x80,1);//读限定电流值
+      delayms(30);
+      Lcd_set_val("zuoxianliu.val=", *(real_data));
+      delayms(30);
+	    *(real_data)=0;
+	
+	    send_data(0x06,0x0B,2);//读限位值
+	    delayms(30);
+      Lcd_set_val("zuoshangxw.val=", (int)(*(real_data)));
+	    delayms(30);
+      Lcd_set_val("zuoxiaxw.val=", (int)(*(real_data+1)));
+      *(real_data)=0;
+      *(real_data+1)=0;
+			
+      //右手限制查询
+    	send_data(0x07,0x80,1);//读限定电流值
+      delayms(30);
+      Lcd_set_val("yshouxianliu.val=", *(real_data));
+      delayms(30);
+	    *(real_data)=0;
+	
+	    send_data(0x07,0x0B,2);//读限位值
+	    delayms(30);
+      Lcd_set_val("yshoushangxw.val=", (int)(*(real_data)));
+	    delayms(30);
+      Lcd_set_val("yshaouxiaxw.val=", (int)(*(real_data+1)));
+      *(real_data)=0;
+      *(real_data+1)=0;			
+			
+      //*一键限制配置部分
+      if(lcd_status==set_limit_value)
+      {
+        //头部舵机 
+				limit_current_contrl_send(0x01,6);//头0.6A的限制电流
+				delayms(30);
+        limit_value_contrl_send(0x01 ,90,90);//头90度限位值发送
+        delayms(30);
+        //俯仰舵机 				
+        limit_current_contrl_send(0x02,6);//俯仰0.6A的限制电流
+				delayms(30);
+        limit_value_contrl_send(0x02 ,12,12);//俯仰12度限位值发送
+        delayms(30);
+        //左手舵机 
+				limit_current_contrl_send(0x06,10);//头1A的限制电流
+				delayms(30);
+        limit_value_contrl_send(0x06 ,90,90);//头90度限位值发送
+        delayms(30);
+        //右手舵机 				
+        limit_current_contrl_send(0x07,10);//俯仰1A的限制电流
+				delayms(30);
+        limit_value_contrl_send(0x07 ,90,90);//俯仰90度限位值发送
+        delayms(30);					
+      }
+
+     if(lcd_status==Return_button)//按下退出按键
+     {
+        //printf("return_button\n");
+        Lcd_control( "page main");
+        lcd_status = main_window;
+        return -1;//如果受到返回信号
+     }
+
+     lcd_status=0;//状态清零
+   return 0;//正常刷新数据
+}
+
+
+
 //void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed);//主控板多写
 int robot_ctrl_window(unsigned short *real_data)//整机控制部分
 {        

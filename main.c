@@ -198,6 +198,64 @@ void motor_contrl_send(uchar device_n,uchar ctrl_mode,uchar speed,unsigned int w
 	
 }
 
+//限位值发送
+void limit_value_contrl_send(uchar device_n ,uchar limit_up_location,uchar limit_down_location)
+{
+    unsigned int crc;
+    uchar read_buf[30]={0xaa,0x55,0xcc};
+	  read_buf[3]=device_n;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x0b;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x02;
+
+      read_buf[9]=0x04;
+
+      read_buf[10]=0x00;
+      read_buf[11]=limit_up_location;
+
+      read_buf[12]=0x00;
+      read_buf[13]=limit_down_location;
+		
+	  crc=get_crc2(&read_buf[3],11);
+	  read_buf[14]=crc&0xff;
+	  read_buf[15]=(crc>>8)&0xff;
+
+	  UART1_Send(read_buf,16);
+	
+}
+
+//限制电流发送
+void limit_current_contrl_send(uchar device_n ,uchar limit_current)
+{
+    unsigned int crc;
+    uchar read_buf[30]={0xaa,0x55,0xcc};
+	  read_buf[3]=device_n;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x07;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x01;
+
+      read_buf[9]=0x02;
+
+      read_buf[10]=0x00;
+      read_buf[11]=limit_current;
+
+		
+	  crc=get_crc2(&read_buf[3],9);
+	  read_buf[12]=crc&0xff;
+	  read_buf[13]=(crc>>8)&0xff;
+
+	  UART1_Send(read_buf,14);
+	
+}
+
 void led_contrl_send(uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar liangdu)//LED控制
 {
       unsigned int crc;
@@ -325,7 +383,18 @@ void Main(void)
                 if(motor_ctrl_window(real_data)<0) break;
                 delayms(10);
               }
-            } 					 
+            } 
+					 
+           if(lcd_status==duojixianzhi_window)
+           {   
+              Lcd_control("page duojixianzhi");
+              TH1 = 0xf7;	
+	            TL1 = TH1;	//38400波特率 						     
+              while (1) //循环读取数据
+              {         
+                if(Duojixianzhi_window(real_data)<0) break;
+              }
+            }					 
         delayms(1);
         
    }//end while(1)
@@ -491,7 +560,12 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
            {
              ////printf("versions_window\n");
              lcd_status=versions_window;
-           } 
+           }
+           if(real_data1[0]==0x0004)
+           {
+             ////printf("versions_window\n");
+             lcd_status=duojixianzhi_window;
+           }					 
            if(real_data1[0]==0x00bc)
            {
              ////printf("back button\n");
@@ -628,7 +702,12 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
            if(real_data1[0]==0xd0d0)//停
            {
              lcd_status=go_stop;
-           }						 
+           }
+				   //限位设置控件
+					 if(real_data1[0]==0x0401)//停
+           {
+             lcd_status=set_limit_value;
+           }
 					 return;
 
         }
