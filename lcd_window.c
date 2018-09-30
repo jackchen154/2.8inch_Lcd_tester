@@ -94,17 +94,26 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
   uchar *cmd_buf = (uchar *)cmd;
   uchar clear_data=50;
   uchar end_frame[]={0xff,0xff,0xff};//帧尾
-  uchar disbuf[8]={0};
+  uchar disbuf[9]={0};
   uchar cmd_len=0;
 
   disbuf[0]='"';
   disbuf[1]='V';
-  disbuf[2]=(*(real_data)>>8)+48;
-  disbuf[3]='.';
-  disbuf[4]=(*(real_data)&0x00ff)+48;
-  disbuf[5]='.';
-  disbuf[6]=(*(real_data+1)>>8)+48;
-  disbuf[7]='"';
+	if((*(real_data)>>8)>9)
+	{
+		disbuf[2]=(*(real_data)>>8)/10+48;
+		disbuf[3]=(*(real_data)>>8)%10+48;
+	}
+	else
+	{
+	  disbuf[2]= 32;
+		disbuf[3]=(*(real_data)>>8)+48;
+	}
+  disbuf[4]='.';
+  disbuf[5]=(*(real_data)&0x00ff)+48;
+  disbuf[6]='.';
+  disbuf[7]=(*(real_data+1)>>8)+48;
+  disbuf[8]='"';
 
   while(*cmd_buf!='\0')
   {
@@ -117,7 +126,7 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
   if(*(real_data)==0 && *(real_data+1)==0)
   UART2_Send((uchar *)"\"no device\"",11);
   else
-  UART2_Send(disbuf,8);//发送值 
+  UART2_Send(disbuf,9);//发送值 
   
   UART2_Send(end_frame,3);//帧尾部
  
@@ -501,7 +510,7 @@ int Duojixianzhi_window(unsigned short *real_data)//舵机限制窗口
         //俯仰舵机 				
         limit_current_contrl_send(0x02,6);//俯仰0.6A的限制电流
 				delayms(30);
-        limit_value_contrl_send(0x02 ,12,12);//俯仰12度限位值发送
+        limit_value_contrl_send(0x02 ,9,9);//平安俯仰9度限位值发送
         delayms(30);
         //左手舵机 
 				limit_current_contrl_send(0x06,10);//头1A的限制电流
