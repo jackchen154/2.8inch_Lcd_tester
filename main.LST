@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 1   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   53   1        if(len==0) len=1;
   54   1        while(len--)
   55   1        {
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 2   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 2   
 
   56   2          crc ^=*ptr;
   57   2          for(i=0;i<8;i++)
@@ -126,7 +126,7 @@ line level    source
  115          unsigned short get_crc3(uchar *ptr,uchar len)
  116          {
  117   1        uchar i;
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 3   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 3   
 
  118   1        unsigned short crc=0xFFFF;
  119   1        if(len==0) len=1;
@@ -190,7 +190,7 @@ line level    source
  177   1            read_buf[14]=weizhi>>8;
  178   1            read_buf[15]=weizhi&0x00ff;
  179   1      
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 4   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 4   
 
  180   1            read_buf[16]=0x12;
  181   1            read_buf[17]=0x0c;
@@ -254,7 +254,7 @@ line level    source
  239   1          read_buf[5]=0x00;
  240   1          read_buf[6]=0x07;
  241   1      
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 5   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 5   
 
  242   1          read_buf[7]=0x00;
  243   1          read_buf[8]=0x01;
@@ -318,7 +318,7 @@ line level    source
  301   1          read_buf[8]=0x04;
  302   1      
  303   1            read_buf[9]=0x08;
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 6   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 6   
 
  304   1      
  305   1            read_buf[10]=0x00;
@@ -361,7 +361,7 @@ line level    source
  342   3                    while (1) 
  343   3                    { 
  344   4                      if(ultrasonic_window(real_data)<0) break;
- 345   4                      delayms(250);
+ 345   4                      delayms(50);
  346   4                    }
  347   3                 }
  348   2                if(lcd_status==Control_window)//机器人控制
@@ -382,7 +382,7 @@ line level    source
  363   3                    Lcd_control("page version");     
  364   3                    while (1) 
  365   3                    { 
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 7   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 7   
 
  366   4                      if(version_window(real_data)<0) break;
  367   4                      delayms(250);
@@ -446,7 +446,7 @@ line level    source
  425   3            else if(data_len==2&&data_buf[data_len]==0xcc)
  426   3            {  
  427   4             start_recive=1;
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 8   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 8   
 
  428   4            } 
  429   3            else 
@@ -510,7 +510,7 @@ line level    source
  486   1      {
  487   2       S2CON&=~S2RI;  //清除置位，以便下一数据传来     
  488   2         data_buf1[data_len1]=S2BUF; 
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 9   
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 9   
 
  489   2           if(start_recive1==0)
  490   2           {
@@ -574,7 +574,7 @@ line level    source
  546   6                   ////printf("Control_window\n");
  547   6                   lcd_status=Control_window;
  548   6                 }
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 10  
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 10  
 
  549   5                 if(real_data1[0]==0x0001)
  550   5                 {
@@ -638,7 +638,7 @@ line level    source
  608   5                 {
  609   6                   ////printf("jieshouzzhong\n");
  610   6                   lcd_status=zzhong;
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 11  
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 11  
 
  611   6                 } 
  612   5                 if(real_data1[0]==0x031b)
@@ -702,7 +702,7 @@ line level    source
  670   6                   ////printf("lianxu1\n");
  671   6                   lcd_status=alianxu1;
  672   6                 }
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 12  
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 12  
 
  673   5                 //real_data1[0]=0x0000;
  674   5                 
@@ -759,14 +759,14 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   2801    ----
+   CODE SIZE        =   2809    ----
    CONSTANT SIZE    =    231    ----
    XDATA SIZE       =    237     175
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
-C51 COMPILER V9.00   MAIN                                                                  09/18/2018 17:05:05 PAGE 13  
+C51 COMPILER V9.00   MAIN                                                                  10/17/2018 11:02:56 PAGE 13  
 
 END OF MODULE INFORMATION.
 

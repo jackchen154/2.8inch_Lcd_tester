@@ -88,6 +88,7 @@ int Lcd_set_val(char *cmd, int val)//模式设置
 
 
 //tou_led.txt="V2.0.2"
+//该为自带清buf的步骤
 int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
 {
 
@@ -99,14 +100,14 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
 
   disbuf[0]='"';
   disbuf[1]='V';
-	if((*(real_data)>>8)>9)
+	if((*(real_data)>>8)>9)//如果主版本号大于9
 	{
 		disbuf[2]=(*(real_data)>>8)/10+48;
 		disbuf[3]=(*(real_data)>>8)%10+48;
 	}
 	else
 	{
-	  disbuf[2]= 32;
+	  disbuf[2]= 32;//空格
 		disbuf[3]=(*(real_data)>>8)+48;
 	}
   disbuf[4]='.';
@@ -130,20 +131,18 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
   
   UART2_Send(end_frame,3);//帧尾部
  
-  while(clear_data--)
+  /*while(clear_data--)
   {
     *real_data=0x0000;
     real_data++;
-  }   
+  }  */
   return TRUE;    
   
 }
 
-
 int ultrasonic_window(unsigned short *real_data)// 传感器窗口数据刷新
 {        
    uchar clear_data=50; 
-
 
 	 send_data(0x81,0x80,27); 
 	 delayms(30);
@@ -162,11 +161,26 @@ int ultrasonic_window(unsigned short *real_data)// 传感器窗口数据刷新
    Lcd_set_val("hongwaizuo.val=",(*(real_data+hongwai2) >> 8)*2);
    Lcd_set_val("hongwaiyou.val=",(*(real_data+hongwai2) & 0x00ff)*2);
 	 
+	 //读取版本号
+	 send_data(0x81,0xCA,2); 
+	 delayms(30);	 	 
+	 Lcd_set_txt("val1.txt=",real_data);//0号板
+	 send_data(0x81,0xCC,2); 
+	 delayms(30);	 
+	 Lcd_set_txt("val2.txt=",real_data);//1号板
+	 send_data(0x81,0xCE,2); 
+	 delayms(30);	 
+	 Lcd_set_txt("val3.txt=",real_data);//2号板
+	 send_data(0x81,0xD0,2); 
+	 delayms(30);	 
+	 Lcd_set_txt("val4.txt=",real_data);//3号板
+	 
 	 while(clear_data--)
    {
     *real_data=0x0000;
     real_data++;
    }
+	
    if(lcd_status==Return_button)
    {
         Lcd_control("page main");
@@ -240,7 +254,7 @@ int version_window(unsigned short *real_data)// 传感器窗口数据刷新
 int motor_ctrl_window(unsigned short *real_data)//舵机控制窗口
 {        
          
-      uchar turn_speed = 8;
+      uchar turn_speed = 10;
       send_data(0x01,0x7e,2);
       delayms(30);
       Lcd_set_val("hbianmaqiz.val=", (int)(*(real_data)));

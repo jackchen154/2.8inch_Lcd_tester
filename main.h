@@ -3,6 +3,8 @@
 #define uchar unsigned char
 //共享的全局变量
 enum reg_ename {banben,zuolicheng=3,youlicheng,chaokuandaiX,chaokuandaiY,chaosheng1=11,chaosheng2,chaosheng3,chaosheng4,chaosheng5,chaosheng6,hongwai1=21,hongwai2,dianliang1=25,dianliang2}; 
+//从0x80开始
+
 enum window { main_window=2, 
 	            Sensor_window, 
 	            Control_window, 

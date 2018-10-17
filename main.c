@@ -342,7 +342,7 @@ void Main(void)
               while (1) 
   						{ 
                 if(ultrasonic_window(real_data)<0) break;
-                delayms(250);
+                delayms(50);
               }
            }
           if(lcd_status==Control_window)//»úÆ÷ÈË¿ØÖÆ
