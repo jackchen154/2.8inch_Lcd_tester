@@ -131,11 +131,11 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
   
   UART2_Send(end_frame,3);//帧尾部
  
-  /*while(clear_data--)
+  while(clear_data--)
   {
     *real_data=0x0000;
     real_data++;
-  }  */
+  }  
   return TRUE;    
   
 }
@@ -517,12 +517,12 @@ int Duojixianzhi_window(unsigned short *real_data)//舵机限制窗口
       if(lcd_status==set_limit_value)
       {
         //头部舵机 
-				limit_current_contrl_send(0x01,6);//头0.6A的限制电流
+				limit_current_contrl_send(0x01,10);//头0.6A的限制电流
 				delayms(30);
         limit_value_contrl_send(0x01 ,90,90);//头90度限位值发送
         delayms(30);
         //俯仰舵机 				
-        limit_current_contrl_send(0x02,6);//俯仰0.6A的限制电流
+        limit_current_contrl_send(0x02,10);//俯仰0.6A的限制电流
 				delayms(30);
         limit_value_contrl_send(0x02 ,9,9);//平安俯仰9度限位值发送
         delayms(30);
