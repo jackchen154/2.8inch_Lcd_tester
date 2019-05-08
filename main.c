@@ -198,6 +198,43 @@ void motor_contrl_send(uchar device_n,uchar ctrl_mode,uchar speed,unsigned int w
 	
 }
 
+void motor_contrl_send1(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi)//舵机控制
+{
+      unsigned int crc;
+      uchar read_buf[18]={0xaa,0x55,0xcc};
+	  read_buf[3]=0x82;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=reg_addr;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x03;
+
+      read_buf[9]=0x06;
+
+      read_buf[10]=0x00;
+      read_buf[11]=ctrl_mode;
+
+      read_buf[12]=0x00;
+      read_buf[13]=speed;
+
+      read_buf[14]=0x00;
+      read_buf[15]=weizhi;
+
+      read_buf[16]=0x00;
+      read_buf[17]=0x00;
+
+
+	  crc=get_crc2(&read_buf[3],13);
+	  read_buf[16]=crc&0xff;
+	  read_buf[17]=(crc>>8)&0xff;
+
+	  UART1_Send(read_buf,18);
+
+	
+}
+
 //限位值发送
 void limit_value_contrl_send(uchar device_n ,uchar limit_up_location,uchar limit_down_location)
 {
@@ -287,6 +324,42 @@ void led_contrl_send(uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar lian
 	
 }
 
+void led_contrl_send1(uchar power,uchar red,uchar green,uchar blue)//LED控制
+{
+      unsigned int crc;
+      uchar read_buf[20]={0xaa,0x55,0xcc};
+	  read_buf[3]=0x82;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x00;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x04;
+
+      read_buf[9]=0x08;
+
+      read_buf[10]=0x00;
+      read_buf[11]=power;
+
+      read_buf[12]=0x00;
+      read_buf[13]=red;
+
+			read_buf[14]=0x00;
+      read_buf[15]=green;
+			
+			read_buf[16]=0x00;
+      read_buf[17]=blue;			
+
+			read_buf[18]=0x00;
+      read_buf[19]=0x00;
+	  crc=get_crc2(&read_buf[3],15);
+	  read_buf[18]=crc&0xff;
+	  read_buf[19]=(crc>>8)&0xff;
+	  UART1_Send(read_buf,20);
+	
+}
+
 void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed)//主控板多写
 {
       unsigned int crc;
@@ -324,12 +397,52 @@ void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed)//
 	
 }
 
+void main_board_contrl_send1(uchar run_mode,uchar left_speed,uchar right_speed)//主控板多写
+{
+    unsigned int crc;
+    uchar read_buf[20]={0xaa,0x55,0xcc};
+	  read_buf[3]=0x81;
+	  read_buf[4]=0x10;
+
+	  read_buf[5]=0x00;
+	  read_buf[6]=0x00;
+
+	  read_buf[7]=0x00;
+	  read_buf[8]=0x04;
+
+      read_buf[9]=0x08;
+
+      read_buf[10]=0x00;//reg:0
+      read_buf[11]=run_mode;
+
+			read_buf[12]=0x00;//reg:1
+      read_buf[13]=left_speed;
+			
+			read_buf[14]=0x00;//reg:2		
+      read_buf[15]=right_speed;
+
+			read_buf[16]=0x05;//reg:3
+      read_buf[17]=0x0a;
+
+			read_buf[18]=0x05;//reg:4
+      read_buf[19]=0x0a;
+			
+			read_buf[20]=0x00;
+      read_buf[21]=0x00;
+			
+	  crc=get_crc2(&read_buf[3],17);
+	  read_buf[20]=crc&0xff;
+	  read_buf[21]=(crc>>8)&0xff;
+	  UART1_Send(read_buf,22);
+	
+}
+
 void Main(void)  
 {  
   UART1_Init();
   UART2_Init();
 
-  Lcd_control("page main"); 
+  Lcd_control("page index"); 
   //Lcd_control("page ultrasonic"); 	
   while(1)
   { 
@@ -345,6 +458,20 @@ void Main(void)
                 delayms(50);
               }
            }
+          if(lcd_status==Sensor_window1)
+          {   						
+              Lcd_control("page ultrasonic1");
+						
+						  TH1 = 0xFD;		
+              TL1 = TH1;	//115200						
+              while (1) 
+  						{ 
+                if(ultrasonic_window1(real_data)<0) break;
+                delayms(50);
+              }
+           }					
+					 
+					 
           if(lcd_status==Control_window)//机器人控制
           {   						
               Lcd_control("page robot control");
@@ -357,6 +484,19 @@ void Main(void)
                 delayms(250);
               }
            }
+          if(lcd_status==Control_window1)//机器人控制
+          {   						
+              Lcd_control("page robot control1");
+						
+						  TH1 = 0xFD;		
+              TL1 = TH1;	//115200						
+              while (1) 
+  						{ 
+                if(robot_ctrl_window1(real_data)<0) break;
+                delayms(250);
+              }
+           }					
+					 
            if(lcd_status==versions_window)
            {   
 
@@ -367,6 +507,18 @@ void Main(void)
                 delayms(250);
               }
            }
+
+           if(lcd_status==versions_window1)
+           {   
+
+			        Lcd_control("page version1");     
+              while (1) 
+              { 
+                if(version_window1(real_data)<0) break;
+                delayms(250);
+              }
+           }	
+
 					 
            if(lcd_status==Headctr_window)
            {   
@@ -384,7 +536,24 @@ void Main(void)
                 delayms(10);
               }
             } 
-					 
+
+           if(lcd_status==Headctr_window1)
+           {   
+              Lcd_control("page head contrl1");
+						  TH1 = 0xFD;		
+              TL1 = TH1;	//115200					 
+              motor_contrl_send1(0x05,0x00,0,0);//初始化舵机
+              delayms(30);
+              motor_contrl_send1(0x16,0x00,0,0);//初始化舵机
+              delayms(30);  
+              motor_contrl_send1(0x23,0x00,0,0);//初始化舵机     
+              while (1) //循环读取数据
+              {         
+                if(motor_ctrl_window1()<0) break;
+                delayms(10);
+              }
+            } 
+						
            if(lcd_status==duojixianzhi_window)
            {   
               Lcd_control("page duojixianzhi");
@@ -543,24 +712,43 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
            //页面窗口部件
            if(real_data1[0]==0x0000)
            {
-             ////printf("Control_window\n");
              lcd_status=Control_window;
            }
+           if(real_data1[0]==0x0005)
+           {
+             lcd_status=Control_window1;
+           }	
+
+					 
            if(real_data1[0]==0x0001)
            {
-             ////printf("Sensor_window\n");
              lcd_status=Sensor_window;
            }
+           if(real_data1[0]==0x0006)
+           {
+             lcd_status=Sensor_window1;
+           }			
+
+					 
            if(real_data1[0]==0x0002)
            {
-             ////printf("Headctr_window\n");
              lcd_status=Headctr_window;
            }
+           if(real_data1[0]==0x0007)
+           {
+             lcd_status=Headctr_window1;
+           }					 
+					 
            if(real_data1[0]==0x0003)
            {
-             ////printf("versions_window\n");
              lcd_status=versions_window;
            }
+           if(real_data1[0]==0x0008)
+           {
+             lcd_status=versions_window1;
+           }					 
+					 
+					 
            if(real_data1[0]==0x0004)
            {
              ////printf("versions_window\n");
@@ -568,9 +756,13 @@ if(S2CON&S2RI)//有数据传来，硬件置位S2RI
            }					 
            if(real_data1[0]==0x00bc)
            {
-             ////printf("back button\n");
              lcd_status=Return_button;
            }
+	           if(real_data1[0]==0xbc01)
+           {
+             lcd_status=Return_button1;
+           }				 
+					 
            //头部窗口部件
            if(real_data1[0]==0x0300)
            {
