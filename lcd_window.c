@@ -566,7 +566,7 @@ int motor_ctrl_window(unsigned short *real_data)//舵机控制窗口
 int motor_ctrl_window1()//舵机控制窗口
 {        
          
-      uchar turn_speed = 10;//15最大值
+      uchar turn_speed = 15;//15最大值
       //头部控制部分  
 //void motor_contrl_send11(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi)//舵机控制
       if(lcd_status==hbiaoding)//标定检测
@@ -575,7 +575,7 @@ int motor_ctrl_window1()//舵机控制窗口
         delayms(30);
         motor_contrl_send1(0x16,0x05,0,0);//左手标定
         delayms(30);         
-        motor_contrl_send1(0x23,0x05,0,0);//右手标定
+        motor_contrl_send1(0x22,0x05,0,0);//右手标定
       }
       if(lcd_status==hzuo)//头部正转
       {
@@ -596,15 +596,15 @@ int motor_ctrl_window1()//舵机控制窗口
 
       if(lcd_status==zzuo)//左手正转
       {
-        motor_contrl_send1( 0x16,0x01,turn_speed,0);    
+        motor_contrl_send1( 0x16,0x03,turn_speed,360);    
       }
       if(lcd_status==zyou)//左手反转
       {
-        motor_contrl_send1( 0x16,0x02,turn_speed,0);        
+        motor_contrl_send1( 0x16,0x03,turn_speed,120);        
       }
       if(lcd_status==zzhong)//左手正中
       {
-        motor_contrl_send1( 0x16,0x03,turn_speed,90);
+        motor_contrl_send1( 0x16,0x03,turn_speed,180);
         delayms(2000);
         motor_contrl_send1( 0x16,0x00,0,0);        
       }
@@ -614,41 +614,41 @@ int motor_ctrl_window1()//舵机控制窗口
       if(lcd_status==yzuo)//正转
       {
         ////printf("yzuo\n");
-        motor_contrl_send1( 0x23,0x01,turn_speed,0);    
+        motor_contrl_send1( 0x22,0x03,turn_speed,360);    
       }
       if(lcd_status==yyou)//反转
       {
         ////printf("yyou\n");
-        motor_contrl_send1( 0x23,0x02,turn_speed,0);        
+        motor_contrl_send1( 0x22,0x03,turn_speed,120);        
       }
       if(lcd_status==yzhong)//正中
       {
         ////printf("yzhong\n");
-        motor_contrl_send1( 0x23,0x03,turn_speed,90);
+        motor_contrl_send1( 0x22,0x03,turn_speed,180);
         delayms(2000);
-        motor_contrl_send1( 0x23,0x00,0,0);        
+        motor_contrl_send1( 0x22,0x00,0,0);        
       }
 //void led_contrl_send1(uchar power,uchar red,uchar green,uchar blue)//LED控制
       //LED灯板控制部分
       if(lcd_status==led00)//关闭
       {
         //printf("led00\n");
-        led_contrl_send1( 0x01,0,0,0);
+        led_contrl_send1( 0x00,0,0,0);
       }
       if(lcd_status==led01)//红
       {
         //printf("led01\n");
-        led_contrl_send1( 0x00,255,0,0);
+        led_contrl_send1( 0x01,255,0,0);
       }
       if(lcd_status==led10)//绿
       {
         //printf("led10\n");
-        led_contrl_send1( 0x00,0,255,0);
+        led_contrl_send1( 0x01,0,255,0);
       }
       if(lcd_status==led11)//蓝
       {
         //printf("led11\n");
-        led_contrl_send1( 0x00,0,0,255);
+        led_contrl_send1( 0x01,0,0,255);
       }
 
       //连续控制部分
@@ -657,23 +657,23 @@ int motor_ctrl_window1()//舵机控制窗口
         //printf("alianxu1\n");
         while(1)
         {
-          motor_contrl_send1( 0x05,0x04,turn_speed,180);//头部正转
+          motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部正转
           delayms(30);
-          motor_contrl_send1( 0x16,0x01,turn_speed,0);//左手正转 
+          motor_contrl_send1( 0x16,0x03,turn_speed,360);//左手正转 
           delayms(30);
-          motor_contrl_send1( 0x23,0x01,turn_speed,0);//右手正转 
+          motor_contrl_send1( 0x22,0x03,turn_speed,360);//右手正转 
           delayms(30);
           if(lcd_status==alianxu0) break;//退出检测
 					if(lcd_status==Return_button1) break;
           delayms(3500);
 					if(lcd_status==Return_button1) break;
           if(lcd_status==alianxu0) break;//退出检测     
-          motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部反转       
+          motor_contrl_send1( 0x05,0x04,turn_speed,180);//头部反转       
           delayms(30);
-          motor_contrl_send1( 0x16,0x02,turn_speed,0);//左手反转
+          motor_contrl_send1( 0x16,0x03,turn_speed,120);//左手反转
           delayms(30);
 					if(lcd_status==Return_button1) break;
-          motor_contrl_send1( 0x23,0x02,turn_speed,0);//右手反转
+          motor_contrl_send1( 0x22,0x03,turn_speed,120);//右手反转
           delayms(30);
           if(lcd_status==alianxu0) break;//退出检测     
           delayms(3500);
@@ -684,9 +684,9 @@ int motor_ctrl_window1()//舵机控制窗口
         //退出回正
         motor_contrl_send1( 0x05,0x04,turn_speed,90);//头回正
         delayms(30);
-        motor_contrl_send1( 0x16,0x03,turn_speed,90);//左手回正
+        motor_contrl_send1( 0x16,0x03,turn_speed,180);//左手回正
         delayms(30);
-        motor_contrl_send1( 0x23,0x03,turn_speed,90);//右手回正
+        motor_contrl_send1( 0x22,0x03,turn_speed,180);//右手回正
         delayms(30);
         delayms(2000);//等待回正完毕
 
@@ -695,7 +695,7 @@ int motor_ctrl_window1()//舵机控制窗口
         delayms(30);
         motor_contrl_send1( 0x16,0x00,0,0);//左手停止 
         delayms(30);
-        motor_contrl_send1( 0x23,0x00,0,0);//右手停止
+        motor_contrl_send1( 0x22,0x00,0,0);//右手停止
         delayms(30);      
       }//
 
@@ -707,9 +707,9 @@ int motor_ctrl_window1()//舵机控制窗口
         //退出回正
         motor_contrl_send1( 0x05,0x04,turn_speed,90);//头回正
         delayms(30);
-        motor_contrl_send1( 0x16,0x03,turn_speed,90);//左手回正
+        motor_contrl_send1( 0x16,0x03,turn_speed,180);//左手回正
         delayms(30);
-        motor_contrl_send1( 0x23,0x03,turn_speed,90);//右手回正
+        motor_contrl_send1( 0x22,0x03,turn_speed,180);//右手回正
         delayms(30);
         delayms(2000);//等待回正完毕
 
@@ -718,13 +718,13 @@ int motor_ctrl_window1()//舵机控制窗口
         delayms(30);
         motor_contrl_send1( 0x16,0x00,0,0);//左手停止 
         delayms(30);
-        motor_contrl_send1( 0x23,0x00,0,0);//右手停止
+        motor_contrl_send1( 0x22,0x00,0,0);//右手停止
         delayms(30); 
 
         return -1;//如果受到返回信号
      }
 
-     //lcd_status=0;//状态清零
+     lcd_status=0;//状态清零
    return 0;//正常刷新数据
 }//*/
 

@@ -31,7 +31,7 @@ enum window { main_window=2,
 	            set_limit_value
              };//窗口页面名称
 void motor_contrl_send(uchar device_n,uchar ctrl_mode,uchar speed,unsigned int weizhi);//舵机控制
-void motor_contrl_send1(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi);//舵机控制
+void motor_contrl_send1(uchar reg_addr ,uchar ctrl_mode,uchar speed,unsigned int weizhi);//舵机控制
 void led_contrl_send(uchar device_n,uchar led1_cycle,uchar led2_cycle,uchar liangdu);//LED控制
 void led_contrl_send1(uchar power,uchar red,uchar green,uchar blue);//LED控制
 void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed);//主控板多写

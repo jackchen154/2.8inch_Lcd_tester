@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 1   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE LCD_WINDOW
@@ -62,7 +62,7 @@ line level    source
   52   2        } while (dat > 0);
   53   1        len += i;                 // i最后的值就是有效字符的个数
   54   1        while (i-- > 0)           // 高位在前低位在后顺序排列
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 2   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 2   
 
   55   1        {
   56   2          *str++ = buf[i] ;
@@ -126,7 +126,7 @@ line level    source
  113   1        disbuf[4]='.';
  114   1        disbuf[5]=(*(real_data)&0x00ff)+48;
  115   1        disbuf[6]='.';
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 3   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 3   
 
  116   1        disbuf[7]=(*(real_data+1)>>8)+48;
  117   1        disbuf[8]='"';
@@ -190,7 +190,7 @@ line level    source
  175   1         delayms(30);  
  176   1         Lcd_set_txt("val4.txt=",real_data);//3号板
  177   1         
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 4   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 4   
 
  178   1         while(clear_data--)
  179   1         {
@@ -254,7 +254,7 @@ line level    source
  237   2              return -1;//如果受到返回信号
  238   2         }
  239   1         return 0;//正常刷新数据
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 5   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 5   
 
  240   1      }
  241          
@@ -318,7 +318,7 @@ line level    source
  299   1         
  300   1         return 0;//正常刷新数据
  301   1      }
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 6   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 6   
 
  302          int version_window1(unsigned short *real_data)// 传感器窗口数据刷新
  303          {        
@@ -382,7 +382,7 @@ line level    source
  361   1         return 0;//正常刷新数据
  362   1      }
  363          
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 7   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 7   
 
  364          int motor_ctrl_window(unsigned short *real_data)//舵机控制窗口
  365          {        
@@ -446,7 +446,7 @@ line level    source
  423   2            }
  424   1            if(lcd_status==zzuo)//左手正转
  425   1            {
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 8   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 8   
 
  426   2              motor_contrl_send( 0x06,0x01,7,0);    
  427   2            }
@@ -510,7 +510,7 @@ line level    source
  485   2              led_contrl_send( 0x03,35,35,100);
  486   2            }
  487   1      
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 9   
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 9   
 
  488   1            //连续控制部分
  489   1            if(lcd_status==alianxu1)
@@ -574,7 +574,7 @@ line level    source
  547   2              delayms(30);
  548   2              delayms(2000);//等待回正完毕
  549   2              //退出后设置为自然停止
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 10  
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 10  
 
  550   2              motor_contrl_send( 0x01,0x00,0,0);//头停止 
  551   2              delayms(30);
@@ -595,7 +595,7 @@ line level    source
  566          int motor_ctrl_window1()//舵机控制窗口
  567          {        
  568   1               
- 569   1            uchar turn_speed = 10;//15最大值
+ 569   1            uchar turn_speed = 15;//15最大值
  570   1            //头部控制部分  
  571   1      //void motor_contrl_send11(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi)//舵机控制
  572   1            if(lcd_status==hbiaoding)//标定检测
@@ -604,7 +604,7 @@ line level    source
  575   2              delayms(30);
  576   2              motor_contrl_send1(0x16,0x05,0,0);//左手标定
  577   2              delayms(30);         
- 578   2              motor_contrl_send1(0x23,0x05,0,0);//右手标定
+ 578   2              motor_contrl_send1(0x22,0x05,0,0);//右手标定
  579   2            }
  580   1            if(lcd_status==hzuo)//头部正转
  581   1            {
@@ -625,61 +625,61 @@ line level    source
  596   1      
  597   1            if(lcd_status==zzuo)//左手正转
  598   1            {
- 599   2              motor_contrl_send1( 0x16,0x01,turn_speed,0);    
+ 599   2              motor_contrl_send1( 0x16,0x03,turn_speed,360);    
  600   2            }
  601   1            if(lcd_status==zyou)//左手反转
  602   1            {
- 603   2              motor_contrl_send1( 0x16,0x02,turn_speed,0);        
+ 603   2              motor_contrl_send1( 0x16,0x03,turn_speed,120);        
  604   2            }
  605   1            if(lcd_status==zzhong)//左手正中
  606   1            {
- 607   2              motor_contrl_send1( 0x16,0x03,turn_speed,90);
+ 607   2              motor_contrl_send1( 0x16,0x03,turn_speed,180);
  608   2              delayms(2000);
  609   2              motor_contrl_send1( 0x16,0x00,0,0);        
  610   2            }
  611   1      
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 11  
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 11  
 
  612   1            //*右手控制部分
  613   1      
  614   1            if(lcd_status==yzuo)//正转
  615   1            {
  616   2              ////printf("yzuo\n");
- 617   2              motor_contrl_send1( 0x23,0x01,turn_speed,0);    
+ 617   2              motor_contrl_send1( 0x22,0x03,turn_speed,360);    
  618   2            }
  619   1            if(lcd_status==yyou)//反转
  620   1            {
  621   2              ////printf("yyou\n");
- 622   2              motor_contrl_send1( 0x23,0x02,turn_speed,0);        
+ 622   2              motor_contrl_send1( 0x22,0x03,turn_speed,120);        
  623   2            }
  624   1            if(lcd_status==yzhong)//正中
  625   1            {
  626   2              ////printf("yzhong\n");
- 627   2              motor_contrl_send1( 0x23,0x03,turn_speed,90);
+ 627   2              motor_contrl_send1( 0x22,0x03,turn_speed,180);
  628   2              delayms(2000);
- 629   2              motor_contrl_send1( 0x23,0x00,0,0);        
+ 629   2              motor_contrl_send1( 0x22,0x00,0,0);        
  630   2            }
  631   1      //void led_contrl_send1(uchar power,uchar red,uchar green,uchar blue)//LED控制
  632   1            //LED灯板控制部分
  633   1            if(lcd_status==led00)//关闭
  634   1            {
  635   2              //printf("led00\n");
- 636   2              led_contrl_send1( 0x01,0,0,0);
+ 636   2              led_contrl_send1( 0x00,0,0,0);
  637   2            }
  638   1            if(lcd_status==led01)//红
  639   1            {
  640   2              //printf("led01\n");
- 641   2              led_contrl_send1( 0x00,255,0,0);
+ 641   2              led_contrl_send1( 0x01,255,0,0);
  642   2            }
  643   1            if(lcd_status==led10)//绿
  644   1            {
  645   2              //printf("led10\n");
- 646   2              led_contrl_send1( 0x00,0,255,0);
+ 646   2              led_contrl_send1( 0x01,0,255,0);
  647   2            }
  648   1            if(lcd_status==led11)//蓝
  649   1            {
  650   2              //printf("led11\n");
- 651   2              led_contrl_send1( 0x00,0,0,255);
+ 651   2              led_contrl_send1( 0x01,0,0,255);
  652   2            }
  653   1      
  654   1            //连续控制部分
@@ -688,25 +688,25 @@ line level    source
  657   2              //printf("alianxu1\n");
  658   2              while(1)
  659   2              {
- 660   3                motor_contrl_send1( 0x05,0x04,turn_speed,180);//头部正转
+ 660   3                motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部正转
  661   3                delayms(30);
- 662   3                motor_contrl_send1( 0x16,0x01,turn_speed,0);//左手正转 
+ 662   3                motor_contrl_send1( 0x16,0x03,turn_speed,360);//左手正转 
  663   3                delayms(30);
- 664   3                motor_contrl_send1( 0x23,0x01,turn_speed,0);//右手正转 
+ 664   3                motor_contrl_send1( 0x22,0x03,turn_speed,360);//右手正转 
  665   3                delayms(30);
  666   3                if(lcd_status==alianxu0) break;//退出检测
  667   3                if(lcd_status==Return_button1) break;
  668   3                delayms(3500);
  669   3                if(lcd_status==Return_button1) break;
  670   3                if(lcd_status==alianxu0) break;//退出检测     
- 671   3                motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部反转       
+ 671   3                motor_contrl_send1( 0x05,0x04,turn_speed,180);//头部反转       
  672   3                delayms(30);
- 673   3                motor_contrl_send1( 0x16,0x02,turn_speed,0);//左手反转
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 12  
+ 673   3                motor_contrl_send1( 0x16,0x03,turn_speed,120);//左手反转
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 12  
 
  674   3                delayms(30);
  675   3                if(lcd_status==Return_button1) break;
- 676   3                motor_contrl_send1( 0x23,0x02,turn_speed,0);//右手反转
+ 676   3                motor_contrl_send1( 0x22,0x03,turn_speed,120);//右手反转
  677   3                delayms(30);
  678   3                if(lcd_status==alianxu0) break;//退出检测     
  679   3                delayms(3500);
@@ -717,9 +717,9 @@ line level    source
  684   2              //退出回正
  685   2              motor_contrl_send1( 0x05,0x04,turn_speed,90);//头回正
  686   2              delayms(30);
- 687   2              motor_contrl_send1( 0x16,0x03,turn_speed,90);//左手回正
+ 687   2              motor_contrl_send1( 0x16,0x03,turn_speed,180);//左手回正
  688   2              delayms(30);
- 689   2              motor_contrl_send1( 0x23,0x03,turn_speed,90);//右手回正
+ 689   2              motor_contrl_send1( 0x22,0x03,turn_speed,180);//右手回正
  690   2              delayms(30);
  691   2              delayms(2000);//等待回正完毕
  692   2      
@@ -728,7 +728,7 @@ line level    source
  695   2              delayms(30);
  696   2              motor_contrl_send1( 0x16,0x00,0,0);//左手停止 
  697   2              delayms(30);
- 698   2              motor_contrl_send1( 0x23,0x00,0,0);//右手停止
+ 698   2              motor_contrl_send1( 0x22,0x00,0,0);//右手停止
  699   2              delayms(30);      
  700   2            }//
  701   1      
@@ -740,9 +740,9 @@ line level    source
  707   2              //退出回正
  708   2              motor_contrl_send1( 0x05,0x04,turn_speed,90);//头回正
  709   2              delayms(30);
- 710   2              motor_contrl_send1( 0x16,0x03,turn_speed,90);//左手回正
+ 710   2              motor_contrl_send1( 0x16,0x03,turn_speed,180);//左手回正
  711   2              delayms(30);
- 712   2              motor_contrl_send1( 0x23,0x03,turn_speed,90);//右手回正
+ 712   2              motor_contrl_send1( 0x22,0x03,turn_speed,180);//右手回正
  713   2              delayms(30);
  714   2              delayms(2000);//等待回正完毕
  715   2      
@@ -751,13 +751,13 @@ line level    source
  718   2              delayms(30);
  719   2              motor_contrl_send1( 0x16,0x00,0,0);//左手停止 
  720   2              delayms(30);
- 721   2              motor_contrl_send1( 0x23,0x00,0,0);//右手停止
+ 721   2              motor_contrl_send1( 0x22,0x00,0,0);//右手停止
  722   2              delayms(30); 
  723   2      
  724   2              return -1;//如果受到返回信号
  725   2           }
  726   1      
- 727   1           //lcd_status=0;//状态清零
+ 727   1           lcd_status=0;//状态清零
  728   1         return 0;//正常刷新数据
  729   1      }//*/
  730          
@@ -766,7 +766,7 @@ line level    source
  733          {                
  734   1            //头部限制查询
  735   1            send_data(0x01,0x80,1);//读限定电流值
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 13  
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 13  
 
  736   1            delayms(30);
  737   1            Lcd_set_val("htouxianliu.val=", *(real_data));
@@ -830,7 +830,7 @@ line level    source
  795   1            if(lcd_status==set_limit_value)
  796   1            {
  797   2              //头部舵机 
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 14  
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 14  
 
  798   2              limit_current_contrl_send(0x01,10);//头0.6A的限制电流
  799   2              delayms(30);
@@ -894,7 +894,7 @@ line level    source
  857   2              main_board_contrl_send(0x05,0,0); //被动刹车
  858   2              delayms(30);
  859   2              main_board_contrl_send(0x00,0,0); //空挡无阻力
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 15  
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 15  
 
  860   2              return -1;//如果受到返回信号
  861   2           }
@@ -958,7 +958,7 @@ line level    source
  919   1           delayms(10);
  920   1           send_data(0x81,0x88,1); //发送查询定位状态指令
  921   1           delayms(30);
-C51 COMPILER V9.00   LCD_WINDOW                                                            05/07/2019 15:15:39 PAGE 16  
+C51 COMPILER V9.00   LCD_WINDOW                                                            05/13/2019 20:38:13 PAGE 16  
 
  922   1           Lcd_set_val("jiaodu.val=",(int)(*(real_data)*0.01));//向LCD模组发送定位值
  923   1           delayms(10);
@@ -985,7 +985,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   7632    ----
+   CODE SIZE        =   7738    ----
    CONSTANT SIZE    =    810    ----
    XDATA SIZE       =   ----      93
    PDATA SIZE       =   ----    ----

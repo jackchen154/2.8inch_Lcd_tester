@@ -198,7 +198,7 @@ void motor_contrl_send(uchar device_n,uchar ctrl_mode,uchar speed,unsigned int w
 	
 }
 
-void motor_contrl_send1(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi)//舵机控制
+void motor_contrl_send1(uchar reg_addr ,uchar ctrl_mode,uchar speed,unsigned int weizhi)//舵机控制
 {
       unsigned int crc;
       uchar read_buf[18]={0xaa,0x55,0xcc};
@@ -219,8 +219,9 @@ void motor_contrl_send1(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi
       read_buf[12]=0x00;
       read_buf[13]=speed;
 
-      read_buf[14]=0x00;
-      read_buf[15]=weizhi;
+      read_buf[14]=weizhi>>8;
+      read_buf[15]=weizhi&0x00ff;
+
 
       read_buf[16]=0x00;
       read_buf[17]=0x00;
