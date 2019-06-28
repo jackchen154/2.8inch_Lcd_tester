@@ -87,7 +87,7 @@ int Lcd_set_val(char *cmd, int val)//模式设置
 }
 
 
-//tou_led.txt="V2.0.2"
+//tou_led.txt="V12.00.02"
 //该为自带清buf的步骤
 int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
 {
@@ -95,7 +95,7 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
   uchar *cmd_buf = (uchar *)cmd;
   uchar clear_data=50;
   uchar end_frame[]={0xff,0xff,0xff};//帧尾
-  uchar disbuf[9]={0};
+  uchar disbuf[11]={0};
   uchar cmd_len=0;
 
   disbuf[0]='"';
@@ -107,14 +107,35 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
 	}
 	else
 	{
-	  disbuf[2]= 32;//空格
+	  disbuf[2]= '0';
 		disbuf[3]=(*(real_data)>>8)+48;
 	}
   disbuf[4]='.';
-  disbuf[5]=(*(real_data)&0x00ff)+48;
-  disbuf[6]='.';
-  disbuf[7]=(*(real_data+1)>>8)+48;
-  disbuf[8]='"';
+	
+	if((*(real_data)&0x00ff)>9)//如果主版本号大于9
+	{
+		disbuf[5]=(*(real_data)&0x00ff)/10+48;
+		disbuf[6]=(*(real_data)&0x00ff)%10+48;
+	}
+	else
+	{
+	  disbuf[5]= '0';
+    disbuf[6]=(*(real_data)&0x00ff)+48;
+	}
+
+  disbuf[7]='.';
+
+	if((*(real_data+1)>>8)>9)//如果主版本号大于9
+	{
+		disbuf[8]=(*(real_data+1)>>8)/10+48;
+		disbuf[9]=(*(real_data+1)>>8)%10+48;
+	}
+	else
+	{
+	  disbuf[8]= '0';
+    disbuf[9]=(*(real_data+1)>>8)+48;
+	}	
+  disbuf[10]='"';
 
   while(*cmd_buf!='\0')
   {
@@ -127,7 +148,7 @@ int Lcd_set_txt(char *cmd,unsigned short *real_data)//模式设置
   if(*(real_data)==0 && *(real_data+1)==0)
   UART2_Send((uchar *)"\"no device\"",11);
   else
-  UART2_Send(disbuf,9);//发送值 
+  UART2_Send(disbuf,11);//发送值 
   
   UART2_Send(end_frame,3);//帧尾部
  
@@ -224,6 +245,16 @@ int ultrasonic_window1(unsigned short *real_data)// 传感器窗口数据刷新
 	 delayms(30);	 
 	 Lcd_set_txt("val4.txt=",real_data);//3号板
 	 */
+	 
+	 //超声波1
+	 send_data(0x81,0xcc,3);
+   delayms(30);
+   Lcd_set_txt("chaosheng1.txt=",real_data);
+	  //超声波2
+	 send_data(0x81,0xcf,3);
+   delayms(30);
+   Lcd_set_txt("chaosheng2.txt=",real_data);
+			
 	 while(clear_data--)
    {
     *real_data=0x0000;
@@ -301,7 +332,7 @@ int version_window(unsigned short *real_data)// 传感器窗口数据刷新
 }
 int version_window1(unsigned short *real_data)// 传感器窗口数据刷新
 {        
-       TH1 = 0xf7;	
+       /*TH1 = 0xf7;	
 	     TL1 = TH1;	//38400波特率 
 			 delayms(30);
 
@@ -312,11 +343,8 @@ int version_window1(unsigned short *real_data)// 传感器窗口数据刷新
       //单测右轮
       send_data(0x02,0x78,3);
       delayms(30);
-      Lcd_set_txt("danyoulun.txt=",real_data);
-
-			
-		  TH1 = 0xFD;		
-		  TL1 = TH1;	//115200波特率	
+      Lcd_set_txt("danyoulun.txt=",real_data);*/
+	
 			//主控板
 			send_data(0x81,0x78,3);
       delayms(30);
@@ -348,9 +376,33 @@ int version_window1(unsigned short *real_data)// 传感器窗口数据刷新
 			
       //舵机板
       send_data(0x82,0x70,3);
-      delayms(100);
+      delayms(30);
       Lcd_set_txt("tou_duoji.txt=",real_data);
-			delayms(100);
+			delayms(30);
+			
+			//驱动器选择
+      if(lcd_status==feng_de_kong)//风得控
+      {
+        main_board_single_write(0x0f,0x047f);//主控板单写   
+        delayms(30);	
+        main_board_single_write(0x09,0x5a5a);//写入flash  
+        delayms(200);	
+        main_board_single_write(0x5a,0x5555);//重启主控板
+        delayms(30);
+				qu_dong_qi=1;
+        lcd_status=0;				
+      }	
+      if(lcd_status==yi_ban_qudong)//一般3代驱动
+      {
+        main_board_single_write(0x0f,0x007f);//主控板单写   
+        delayms(30);	
+        main_board_single_write(0x09,0x5a5a);//写入flash  
+        delayms(200);	
+        main_board_single_write(0x5a,0x5555);//重启主控板
+        delayms(30);
+				qu_dong_qi=0;
+        lcd_status=0;				
+      }				
      if(lcd_status==Return_button1)
      {
         Lcd_control("page main1");
@@ -563,12 +615,16 @@ int motor_ctrl_window(unsigned short *real_data)//舵机控制窗口
 
 
 //*
-int motor_ctrl_window1()//舵机控制窗口
+
+int motor_ctrl_window1(unsigned short *real_data)//舵机控制窗口
 {        
          
       uchar turn_speed = 15;//15最大值
+	    int head_angle=0,left_angle=0,right_angle=0;
+	    //*用于心跳检测间隔
+	    send_data(0x82,0x70,3);
+      delayms(200); //*/
       //头部控制部分  
-//void motor_contrl_send11(uchar reg_addr ,uchar ctrl_mode,uchar speed,uchar weizhi)//舵机控制
       if(lcd_status==hbiaoding)//标定检测
       {
         motor_contrl_send1(0x05,0x01,0,0);//头标定
@@ -587,13 +643,10 @@ int motor_ctrl_window1()//舵机控制窗口
       }
       if(lcd_status==hzhong)//头部正中
       {
-        motor_contrl_send1( 0x05,0x04,turn_speed,90);
-        delayms(2000);
-        motor_contrl_send1( 0x05,0x00,0,0);        
+        motor_contrl_send1( 0x05,0x04,turn_speed,90);      
       }
 
       //左手控制部分
-
       if(lcd_status==zzuo)//左手正转
       {
         motor_contrl_send1( 0x16,0x03,turn_speed,360);    
@@ -604,100 +657,107 @@ int motor_ctrl_window1()//舵机控制窗口
       }
       if(lcd_status==zzhong)//左手正中
       {
-        motor_contrl_send1( 0x16,0x03,turn_speed,180);
-        delayms(2000);
-        motor_contrl_send1( 0x16,0x00,0,0);        
+        motor_contrl_send1( 0x16,0x03,turn_speed,180);     
       }
 
       //*右手控制部分
-
       if(lcd_status==yzuo)//正转
       {
-        ////printf("yzuo\n");
         motor_contrl_send1( 0x22,0x03,turn_speed,360);    
       }
       if(lcd_status==yyou)//反转
       {
-        ////printf("yyou\n");
         motor_contrl_send1( 0x22,0x03,turn_speed,120);        
       }
       if(lcd_status==yzhong)//正中
       {
-        ////printf("yzhong\n");
-        motor_contrl_send1( 0x22,0x03,turn_speed,180);
-        delayms(2000);
-        motor_contrl_send1( 0x22,0x00,0,0);        
+        motor_contrl_send1( 0x22,0x03,turn_speed,180);     
       }
-//void led_contrl_send1(uchar power,uchar red,uchar green,uchar blue)//LED控制
+
       //LED灯板控制部分
       if(lcd_status==led00)//关闭
       {
-        //printf("led00\n");
         led_contrl_send1( 0x00,0,0,0);
       }
       if(lcd_status==led01)//红
       {
-        //printf("led01\n");
         led_contrl_send1( 0x01,255,0,0);
       }
       if(lcd_status==led10)//绿
-      {
-        //printf("led10\n");
+      {       
         led_contrl_send1( 0x01,0,255,0);
       }
       if(lcd_status==led11)//蓝
       {
-        //printf("led11\n");
         led_contrl_send1( 0x01,0,0,255);
       }
 
       //连续控制部分
       if(lcd_status==alianxu1)
       {
-        //printf("alianxu1\n");
-        while(1)
-        {
-          motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部正转
-          delayms(30);
-          motor_contrl_send1( 0x16,0x03,turn_speed,360);//左手正转 
-          delayms(30);
-          motor_contrl_send1( 0x22,0x03,turn_speed,360);//右手正转 
-          delayms(30);
-          if(lcd_status==alianxu0) break;//退出检测
-					if(lcd_status==Return_button1) break;
-          delayms(3500);
-					if(lcd_status==Return_button1) break;
-          if(lcd_status==alianxu0) break;//退出检测     
-          motor_contrl_send1( 0x05,0x04,turn_speed,180);//头部反转       
-          delayms(30);
-          motor_contrl_send1( 0x16,0x03,turn_speed,120);//左手反转
-          delayms(30);
-					if(lcd_status==Return_button1) break;
-          motor_contrl_send1( 0x22,0x03,turn_speed,120);//右手反转
-          delayms(30);
-          if(lcd_status==alianxu0) break;//退出检测     
-          delayms(3500);
-					if(lcd_status==Return_button1) break;
-          if(lcd_status==alianxu0) break;//退出检测       
-        }
-        //printf("alianxu0\n");
-        //退出回正
-        motor_contrl_send1( 0x05,0x04,turn_speed,90);//头回正
+        motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部正转
         delayms(30);
+        motor_contrl_send1( 0x16,0x03,turn_speed,360);//左手正转 
+        delayms(30);
+        motor_contrl_send1( 0x22,0x03,turn_speed,360);//右手正转 
+        while(1)
+        {				
+          send_data(0x82,0x74,11);
+					delayms(30);
+          head_angle=(int)(*(real_data));
+					left_angle=(int)(*(real_data+5));
+					right_angle=(int)(*(real_data+10));
+					
+					if(head_angle>=0&&head_angle<=2)
+					{
+					   motor_contrl_send1( 0x05,0x04,turn_speed,180);//头部反转
+						 delayms(30);
+					}
+					if(head_angle>=178&&head_angle<=180)
+					{
+             motor_contrl_send1( 0x05,0x04,turn_speed,0);//头部正转 
+             delayms(30);						
+					}
+
+					//左手
+					if(left_angle>=358&&left_angle<=360||left_angle>=0&&left_angle<=2)
+					{
+          motor_contrl_send1( 0x16,0x03,turn_speed,120);//左手反转 
+						 delayms(30);
+					}
+					if(left_angle>=117&&left_angle<=122)
+					{
+             motor_contrl_send1( 0x16,0x03,turn_speed,360);//左手正转 
+             delayms(30);						
+					}	
+					//右手
+					if(right_angle>=358&&right_angle<=360||right_angle>=0&&right_angle<=2)
+					{
+           motor_contrl_send1( 0x22,0x03,turn_speed,120);//右手反转 
+						 delayms(30);
+					}
+					if(right_angle>=117&&right_angle<=122)
+					{
+             motor_contrl_send1( 0x22,0x03,turn_speed,360);//右手正转 
+             delayms(30);						
+					}						
+
+					if(lcd_status==Return_button1) break;
+          if(lcd_status==alianxu0) break;//退出检测     
+          delayms(200);
+        }
+
+        //退出回正
+
         motor_contrl_send1( 0x16,0x03,turn_speed,180);//左手回正
         delayms(30);
         motor_contrl_send1( 0x22,0x03,turn_speed,180);//右手回正
         delayms(30);
-        delayms(2000);//等待回正完毕
+        motor_contrl_send1( 0x05,0x04,turn_speed,90);//头回正
+        delayms(30);				
 
-        //退出后设置为自然停止
-        motor_contrl_send1( 0x05,0x00,0,0);//头停止 
-        delayms(30);
-        motor_contrl_send1( 0x16,0x00,0,0);//左手停止 
-        delayms(30);
-        motor_contrl_send1( 0x22,0x00,0,0);//右手停止
-        delayms(30);      
-      }//
+   
+      }
 
      if(lcd_status==Return_button1)//按下退出按键
      {
@@ -710,23 +770,14 @@ int motor_ctrl_window1()//舵机控制窗口
         motor_contrl_send1( 0x16,0x03,turn_speed,180);//左手回正
         delayms(30);
         motor_contrl_send1( 0x22,0x03,turn_speed,180);//右手回正
-        delayms(30);
-        delayms(2000);//等待回正完毕
 
-        //退出后设置为自然停止
-        motor_contrl_send1( 0x05,0x00,0,0);//头停止 
-        delayms(30);
-        motor_contrl_send1( 0x16,0x00,0,0);//左手停止 
-        delayms(30);
-        motor_contrl_send1( 0x22,0x00,0,0);//右手停止
-        delayms(30); 
 
         return -1;//如果受到返回信号
      }
 
-     lcd_status=0;//状态清零
+    lcd_status=0;//状态清零
    return 0;//正常刷新数据
-}//*/
+}
 
 
 int Duojixianzhi_window(unsigned short *real_data)//舵机限制窗口
@@ -828,6 +879,28 @@ int Duojixianzhi_window(unsigned short *real_data)//舵机限制窗口
    return 0;//正常刷新数据
 }
 
+int biaoqing_window(void)//表情窗口
+{                
+			switch(lcd_status)
+			{
+			  case zhengchang: biao_qing_contrl_send(0);break;
+				case aixin: biao_qing_contrl_send(145);break;
+				case chongdian: biao_qing_contrl_send(257);break;
+				case daohang: biao_qing_contrl_send(277);break;
+				default : break;
+			}
+
+     if(lcd_status==Return_button1)//按下退出按键
+     {
+        //printf("return_button\n");
+        Lcd_control( "page main1");
+        lcd_status = main_window;
+        return -1;//如果受到返回信号
+     }
+
+     lcd_status=0;//状态清零
+   return 0;//正常刷新数据
+}
 
 
 //void main_board_contrl_send(uchar run_mode,uchar left_speed,uchar right_speed);//主控板多写
@@ -887,8 +960,8 @@ int robot_ctrl_window(unsigned short *real_data)//整机控制部分
 //*
 int robot_ctrl_window1(unsigned short *real_data)//整机控制部分
 {        
- 	     uchar run_speed = 20;
-       uchar tun_speed =10;  
+ 	     unsigned short run_speed = 250;//最大值700
+       unsigned short tun_speed =100;  
 	    *real_data = 0xf1f0;
 
 			 switch(lcd_status)
@@ -914,6 +987,9 @@ int robot_ctrl_window1(unsigned short *real_data)//整机控制部分
 			  main_board_contrl_send1(0x05,0,0); //被动刹车
 			  delayms(30);
 			  main_board_contrl_send1(0x00,0,0); //空挡无阻力
+			  delayms(30);
+        main_board_single_write(0x5a,0x5555);//重启主控板
+        delayms(30);				 
         return -1;//如果受到返回信号
      }
 		 delayms(10);
