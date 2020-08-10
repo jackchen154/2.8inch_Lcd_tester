@@ -487,7 +487,8 @@ void Main(void)
 	//TH1 = 0xFD;		
   //TL1 = TH1;	//115200						
   Lcd_control("page index"); 
-  //Lcd_control("page ultrasonic1"); 	
+  //Lcd_control("page ultrasonic1"); 
+  lcd_status=	Sensor_window1;
   while(1)
   { 
           if(lcd_status==Sensor_window)
@@ -502,11 +503,11 @@ void Main(void)
           if(lcd_status==Sensor_window1)
           {   						
               Lcd_control("page ultrasonic1");
-						  main_board_single_write(0x13,0xaaaa);//超声波探头盲区设置为10
+						  main_board_single_write(0x13,0xcccc);//超声波探头盲区设置为12
 						  delayms(30);
-						  main_board_single_write(0x14,0xaaaa);
+						  main_board_single_write(0x14,0xcccc);
 						  delayms(30);						
-						  main_board_single_write(0x15,0xaaaa);
+						  main_board_single_write(0x15,0xcccc);
 						  delayms(30);
 						while (1) 
   						{ 
